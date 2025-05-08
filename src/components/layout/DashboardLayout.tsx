@@ -108,7 +108,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       icon: FileText, 
       label: "Reports", 
       href: "/dashboard/reports", 
-      hidden: user?.role === "student" && user?.role !== "mentor" && user?.role !== "leader"
+      hidden: user.role === "student" // Only hide for students
     },
     { 
       icon: User, 

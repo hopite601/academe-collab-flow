@@ -10,6 +10,8 @@ import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
 import Groups from "./pages/Groups";
 import Tasks from "./pages/Tasks";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,8 +30,8 @@ const App = () => (
             <Route path="/dashboard/groups" element={<Groups />} />
             <Route path="/dashboard/tasks" element={<Tasks />} />
             <Route path="/dashboard/reports" element={<Dashboard />} />
-            <Route path="/dashboard/profile" element={<Dashboard />} />
-            <Route path="/dashboard/settings" element={<Dashboard />} />
+            <Route path="/dashboard/profile" element={<Profile />} />
+            <Route path="/dashboard/settings" element={<Settings />} />
             {/* Static pages */}
             <Route path="/about" element={<NotFound />} />
             <Route path="/contact" element={<NotFound />} />
