@@ -15,7 +15,7 @@ import {
 import {
   Home,
   User,
-  Projects,
+  FolderKanban,
   Users,
   ClipboardList,
   FileText,
@@ -90,7 +90,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       href: "/dashboard" 
     },
     { 
-      icon: Projects, 
+      icon: FolderKanban, 
       label: "Projects", 
       href: "/dashboard/projects" 
     },
@@ -108,7 +108,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       icon: FileText, 
       label: "Reports", 
       href: "/dashboard/reports", 
-      hidden: user?.role === "student" && user?.role !== "leader"
+      hidden: user?.role === "student" && user?.role !== "mentor" && user?.role !== "leader"
     },
     { 
       icon: User, 
