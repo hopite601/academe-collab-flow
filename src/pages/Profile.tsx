@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { DashboardLayout } from "../components/layout/DashboardLayout";
@@ -10,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/components/ui/use-toast";
 
 const Profile = () => {
-  const { user, updateUserProfile } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -37,7 +36,7 @@ const Profile = () => {
   const handleProfileUpdate = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // In a real app, you would call updateUserProfile with formData
+    // In a real app, you would call an API to update the user profile
     // For now, we'll just show a success toast
     toast({
       title: "Profile updated",
