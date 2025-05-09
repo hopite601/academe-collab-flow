@@ -1,73 +1,95 @@
-# Welcome to your Lovable project
 
-## Project info
+# Academe Project Management
 
-**URL**: https://lovable.dev/projects/2491438c-a0b8-46d8-96cc-3092eb644a43
+A comprehensive project management dashboard built with React, Vite, TypeScript, and Tailwind CSS.
 
-## How can I edit this code?
+## Project Overview
 
-There are several ways of editing your application.
+This application provides a complete project management solution with features including:
 
-**Use Lovable**
+- User authentication
+- Project management
+- Task boards with drag and drop functionality
+- Group collaboration
+- User profiles and settings
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/2491438c-a0b8-46d8-96cc-3092eb644a43) and start prompting.
+## Technology Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Frontend Framework**: React with TypeScript
+- **Build Tool**: Vite
+- **UI Components**: shadcn-ui
+- **Styling**: Tailwind CSS
+- **Routing**: React Router
+- **State Management**: React Query (TanStack Query)
+- **Charts and Visualizations**: Recharts
+- **Icons**: Lucide React
 
-**Use your preferred IDE**
+## Installation Instructions (using Yarn)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Prerequisites
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- Node.js (v16.0.0 or higher)
+- Yarn package manager
 
-Follow these steps:
+### Step 1: Clone the repository
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```bash
+git clone <repository-url>
+cd <project-directory>
 ```
 
-**Edit a file directly in GitHub**
+### Step 2: Install dependencies with Yarn
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+yarn
+```
 
-**Use GitHub Codespaces**
+### Step 3: Start the development server
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```bash
+yarn dev
+```
 
-## What technologies are used for this project?
+This will start the development server at http://localhost:8080
 
-This project is built with:
+### Additional Yarn Commands
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Build for production**:
+  ```bash
+  yarn build
+  ```
 
-## How can I deploy this project?
+- **Preview the production build**:
+  ```bash
+  yarn preview
+  ```
 
-Simply open [Lovable](https://lovable.dev/projects/2491438c-a0b8-46d8-96cc-3092eb644a43) and click on Share -> Publish.
+## Package Dependencies
 
-## Can I connect a custom domain to my Lovable project?
+If you need to install the dependencies separately or want to know what's included:
 
-Yes, you can!
+### Main Dependencies
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```bash
+yarn add @hookform/resolvers @radix-ui/react-accordion @radix-ui/react-alert-dialog @radix-ui/react-aspect-ratio @radix-ui/react-avatar @radix-ui/react-checkbox @radix-ui/react-collapsible @radix-ui/react-context-menu @radix-ui/react-dialog @radix-ui/react-dropdown-menu @radix-ui/react-hover-card @radix-ui/react-label @radix-ui/react-menubar @radix-ui/react-navigation-menu @radix-ui/react-popover @radix-ui/react-progress @radix-ui/react-radio-group @radix-ui/react-scroll-area @radix-ui/react-select @radix-ui/react-separator @radix-ui/react-slider @radix-ui/react-slot @radix-ui/react-switch @radix-ui/react-tabs @radix-ui/react-toast @radix-ui/react-toggle @radix-ui/react-toggle-group @radix-ui/react-tooltip @tanstack/react-query class-variance-authority clsx cmdk date-fns embla-carousel-react input-otp lucide-react next-themes react react-beautiful-dnd react-day-picker react-dom react-hook-form react-resizable-panels react-router-dom recharts sonner tailwind-merge tailwindcss-animate vaul zod
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+### UI Components
+
+The project uses shadcn-ui, a collection of reusable components built using Radix UI and Tailwind CSS.
+
+## Project Structure
+
+- `/src/components`: UI components
+- `/src/pages`: Application pages
+- `/src/contexts`: React contexts
+- `/src/hooks`: Custom React hooks
+- `/src/lib`: Utility functions
+
+## Deployment
+
+The application can be deployed to any static hosting platform, such as Vercel, Netlify, or GitHub Pages.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
