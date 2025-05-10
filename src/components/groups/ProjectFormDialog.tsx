@@ -69,7 +69,10 @@ export function ProjectFormDialog({ onCreateProject }: ProjectFormDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button onClick={() => setOpen(true)}>
+        <Button onClick={(e) => {
+          e.preventDefault(); // Prevent the default behavior
+          setOpen(true); // Manually open the dialog
+        }}>
           <Plus className="h-4 w-4 mr-2" /> Create Project
         </Button>
       </DialogTrigger>
