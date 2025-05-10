@@ -1,11 +1,11 @@
 
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { GroupCard, Group } from "@/components/groups/GroupCard";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Group } from "@/components/groups/GroupCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { ProjectFormDialog } from "@/components/groups/ProjectFormDialog";
+import { GroupsSearchFilter } from "@/components/groups/GroupsSearchFilter";
+import { GroupsList } from "@/components/groups/GroupsList";
 
 const Groups = () => {
   const { user } = useAuth();
@@ -121,6 +121,7 @@ const Groups = () => {
     const memberCount = projectData.members;
     const newMembers = Array.from({ length: memberCount }).map((_, index) => {
       const isLeader = index === 0;
+      const roleValue = isLeader ? "leader" : "member";
       const name = index === 0 
         ? projectData.leaderName 
         : `Team Member ${index}`;
@@ -128,7 +129,7 @@ const Groups = () => {
       return {
         id: `user-${newProjectId}-${index}`,
         name: name,
-        role: isLeader ? "leader" : "member",
+        role: roleValue as "leader" | "member",
         avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`,
       };
     });
@@ -167,50 +168,18 @@ const Groups = () => {
           )}
         </div>
         
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <Input
-              placeholder="Search groups..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full"
-            />
-          </div>
-          <div className="w-full sm:w-48">
-            <Select 
-              value={projectFilter} 
-              onValueChange={setProjectFilter}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by Project" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Projects</SelectItem>
-                {projects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        <GroupsSearchFilter 
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          projectFilter={projectFilter}
+          setProjectFilter={setProjectFilter}
+          projects={projects}
+        />
         
-        {filteredGroups.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">No groups found</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredGroups.map((group) => (
-              <GroupCard
-                key={group.id}
-                group={group}
-                onClick={() => handleGroupClick(group)}
-              />
-            ))}
-          </div>
-        )}
+        <GroupsList 
+          groups={filteredGroups} 
+          onGroupClick={handleGroupClick} 
+        />
       </div>
     </DashboardLayout>
   );
