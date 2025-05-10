@@ -5,6 +5,7 @@ import { GroupCard, Group } from "@/components/groups/GroupCard";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
+import { ProjectFormDialog } from "@/components/groups/ProjectFormDialog";
 
 const Groups = () => {
   const { user } = useAuth();
@@ -111,18 +112,59 @@ const Groups = () => {
     // This would navigate to group details in a real application
   };
 
+  // Handle project creation
+  const handleCreateProject = (projectData: any) => {
+    // Generate a new unique ID
+    const newProjectId = `project${groups.length + 1}`;
+    
+    // Create a list of randomly generated members
+    const memberCount = projectData.members;
+    const newMembers = Array.from({ length: memberCount }).map((_, index) => {
+      const isLeader = index === 0;
+      const name = index === 0 
+        ? projectData.leaderName 
+        : `Team Member ${index}`;
+      
+      return {
+        id: `user-${newProjectId}-${index}`,
+        name: name,
+        role: isLeader ? "leader" : "member",
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`,
+      };
+    });
+
+    // Create the new group
+    const newGroup: Group = {
+      id: `group${groups.length + 1}`,
+      name: `${projectData.title} Team`,
+      projectId: newProjectId,
+      projectTitle: projectData.title,
+      members: newMembers,
+      progress: 0,
+    };
+
+    // Add the new group to the list
+    setGroups([...groups, newGroup]);
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Groups</h1>
-          <p className="text-muted-foreground">
-            {user?.role === "mentor" 
-              ? "Supervise and monitor project groups" 
-              : user?.role === "leader"
-                ? "Lead and manage your teams"
-                : "Collaborate with your project teams"}
-          </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Groups</h1>
+            <p className="text-muted-foreground">
+              {user?.role === "mentor" 
+                ? "Supervise and monitor project groups" 
+                : user?.role === "leader"
+                  ? "Lead and manage your teams"
+                  : "Collaborate with your project teams"}
+            </p>
+          </div>
+          
+          {(user?.role === "mentor" || user?.role === "leader") && (
+            <ProjectFormDialog onCreateProject={handleCreateProject} />
+          )}
         </div>
         
         <div className="flex flex-col sm:flex-row gap-4">
