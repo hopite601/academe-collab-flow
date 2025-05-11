@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Group } from "@/components/groups/GroupCard";
@@ -153,7 +152,7 @@ export function GroupsContent() {
 
   return (
     <div className="space-y-6">
-      <GroupsHeader onCreateProject={handleCreateProject} />
+      <GroupsHeader />
       
       <GroupsSearchFilter 
         searchTerm={searchTerm}

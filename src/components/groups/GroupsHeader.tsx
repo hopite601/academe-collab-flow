@@ -1,12 +1,7 @@
 
 import { useAuth } from "@/contexts/AuthContext";
-import { ProjectFormDialog } from "@/components/groups/ProjectFormDialog";
 
-type GroupsHeaderProps = {
-  onCreateProject: (projectData: any) => void;
-};
-
-export function GroupsHeader({ onCreateProject }: GroupsHeaderProps) {
+export function GroupsHeader() {
   const { user } = useAuth();
 
   return (
@@ -21,10 +16,6 @@ export function GroupsHeader({ onCreateProject }: GroupsHeaderProps) {
               : "Collaborate with your project teams"}
         </p>
       </div>
-      
-      {(user?.role === "mentor" || user?.role === "leader") && (
-        <ProjectFormDialog onCreateProject={onCreateProject} />
-      )}
     </div>
   );
 }

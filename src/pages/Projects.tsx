@@ -4,6 +4,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { ProjectList } from "@/components/projects/ProjectList";
 import { Project } from "@/components/projects/ProjectCard";
 import { useAuth } from "@/contexts/AuthContext";
+import { ProjectFormDialog } from "@/components/groups/ProjectFormDialog";
 
 const Projects = () => {
   const { user } = useAuth();
@@ -71,6 +72,29 @@ const Projects = () => {
     // This would navigate to project details in a real application
   };
 
+  // Handle project creation
+  const handleCreateProject = (projectData: any) => {
+    console.log("Creating project:", projectData);
+    
+    // Create new project object
+    const newProject: Project = {
+      id: `project${projects.length + 1}`,
+      title: projectData.title,
+      description: projectData.description,
+      mentorName: user?.role === "mentor" ? user.name : projectData.mentorName,
+      mentorId: user?.role === "mentor" ? user.id : `mentor${projects.length + 1}`,
+      teamLeaderName: projectData.leaderName,
+      teamLeaderId: `leader${projects.length + 1}`,
+      members: projectData.members,
+      status: "open",
+      progress: 0,
+      tags: ["New Project"]
+    };
+    
+    // Add the new project to the list
+    setProjects([...projects, newProject]);
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -85,6 +109,10 @@ const Projects = () => {
                   : "Browse and join academic projects"}
             </p>
           </div>
+          
+          {user?.role === "mentor" && (
+            <ProjectFormDialog onCreateProject={handleCreateProject} />
+          )}
         </div>
         
         <ProjectList 
