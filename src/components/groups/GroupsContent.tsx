@@ -26,7 +26,7 @@ export function GroupsContent() {
             id: user?.id || "user1",
             name: user?.name || "John Doe",
             role: user?.role === "leader" ? "leader" : "member",
-            avatar: user?.avatar,
+            avatar: user?.avatar || `https://ui-avatars.com/api/?name=John+Doe&background=random`,
           },
           {
             id: "user2",
@@ -104,7 +104,10 @@ export function GroupsContent() {
   });
 
   // Unique projects for filter
-  const projects = Array.from(new Set(groups.map(group => ({ id: group.projectId, title: group.projectTitle }))));
+  const projects = Array.from(new Set(groups.map(group => ({ id: group.projectId, title: group.projectTitle }))))
+    .filter((value, index, self) => 
+      self.findIndex(proj => proj.id === value.id) === index
+    );
 
   const handleGroupClick = (group: Group) => {
     console.log("Group clicked:", group);
@@ -113,17 +116,18 @@ export function GroupsContent() {
 
   // Handle project creation
   const handleCreateProject = (projectData: any) => {
+    console.log("Creating project:", projectData);
     // Generate a new unique ID
     const newProjectId = `project${groups.length + 1}`;
     
     // Create a list of randomly generated members
-    const memberCount = projectData.members;
+    const memberCount = projectData.members || 2;
     const newMembers = Array.from({ length: memberCount }).map((_, index) => {
       const isLeader = index === 0;
       const roleValue = isLeader ? "leader" : "member";
-      const name = index === 0 
-        ? projectData.leaderName 
-        : `Team Member ${index}`;
+      const name = isLeader 
+        ? (projectData.leaderName || "Team Leader") 
+        : `Team Member ${index + 1}`;
       
       return {
         id: `user-${newProjectId}-${index}`,

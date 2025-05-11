@@ -2,12 +2,17 @@
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+type Project = {
+  id: string;
+  title: string;
+};
+
 type GroupsSearchFilterProps = {
   searchTerm: string;
   setSearchTerm: (value: string) => void;
   projectFilter: string;
   setProjectFilter: (value: string) => void;
-  projects: Array<{ id: string; title: string }>;
+  projects: Project[];
 };
 
 export function GroupsSearchFilter({
