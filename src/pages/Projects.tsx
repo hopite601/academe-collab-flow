@@ -3,9 +3,7 @@ import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { ProjectList } from "@/components/projects/ProjectList";
 import { Project } from "@/components/projects/ProjectCard";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus } from "lucide-react";
 
 const Projects = () => {
   const { user } = useAuth();
@@ -87,12 +85,6 @@ const Projects = () => {
                   : "Browse and join academic projects"}
             </p>
           </div>
-          
-          {user?.role === "mentor" && (
-            <Button>
-              <Plus className="h-4 w-4 mr-2" /> Create Project
-            </Button>
-          )}
         </div>
         
         <ProjectList 
