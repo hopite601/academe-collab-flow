@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -35,11 +34,8 @@ export function Navbar() {
               <img 
                 src="/lovable-uploads/31ff4375-cb6c-469f-971c-49da226ae007.png" 
                 alt="Academe Logo" 
-                className="h-10 mr-2" 
+                className="h-14 mr-2" 
               />
-              <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-academe-500 to-academe-700">
-                Academe
-              </span>
             </Link>
           </div>
 
