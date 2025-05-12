@@ -29,6 +29,13 @@ const Index = () => {
         {/* Hero Section - Simplified */}
         <section className="hero-gradient py-20 px-4 text-center text-white flex items-center justify-center flex-1">
           <div className="max-w-3xl mx-auto">
+            <div className="flex justify-center mb-6">
+              <img 
+                src="/lovable-uploads/31ff4375-cb6c-469f-971c-49da226ae007.png" 
+                alt="Academe Logo" 
+                className="h-24 animate-fade-in" 
+              />
+            </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 animate-fade-in">
               Academic Project Management
             </h1>

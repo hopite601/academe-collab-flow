@@ -32,6 +32,11 @@ export function Navbar() {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
+              <img 
+                src="/lovable-uploads/31ff4375-cb6c-469f-971c-49da226ae007.png" 
+                alt="Academe Logo" 
+                className="h-10 mr-2" 
+              />
               <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-academe-500 to-academe-700">
                 Academe
               </span>
