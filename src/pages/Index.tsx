@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "../components/Navbar";
@@ -36,12 +37,12 @@ const Index = () => {
               and achieve better results together.
             </p>
             
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 animate-fade-in" style={{ animationDelay: "400ms" }}>
+            <div className="flex flex-col items-center justify-center gap-6 animate-fade-in" style={{ animationDelay: "400ms" }}>
               {isAuthenticated ? (
                 <Button 
                   size="lg" 
                   onClick={() => navigate("/dashboard")}
-                  className="bg-white text-academe-700 hover:bg-gray-100 hover:text-academe-800 px-8 py-6 text-lg"
+                  className="bg-white text-academe-700 hover:bg-gray-100 hover:text-academe-800 px-8 py-6 text-lg w-64"
                 >
                   Go to Dashboard
                 </Button>
@@ -50,7 +51,7 @@ const Index = () => {
                   <Button 
                     size="lg" 
                     onClick={() => handleAuthAction("login")}
-                    className="bg-white text-academe-700 hover:bg-gray-100 hover:text-academe-800 px-8 py-6 text-lg"
+                    className="bg-white text-academe-700 hover:bg-gray-100 hover:text-academe-800 px-8 py-6 text-lg w-64 font-medium"
                   >
                     Login
                   </Button>
@@ -58,7 +59,7 @@ const Index = () => {
                     size="lg" 
                     variant="outline" 
                     onClick={() => handleAuthAction("register")}
-                    className="border-white text-white hover:bg-white/10 px-8 py-6 text-lg"
+                    className="border-white text-white hover:bg-white/10 px-8 py-6 text-lg w-64 font-medium"
                   >
                     Register
                   </Button>
