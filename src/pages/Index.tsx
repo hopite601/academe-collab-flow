@@ -38,21 +38,33 @@ const Index = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6 animate-fade-in" style={{ animationDelay: "400ms" }}>
-              <Button 
-                size="lg" 
-                onClick={() => handleAuthAction("login")}
-                className="bg-white text-academe-700 hover:bg-gray-100 hover:text-academe-800 px-8 py-6 text-lg"
-              >
-                Login
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
-                onClick={() => handleAuthAction("register")}
-                className="border-white text-white hover:bg-white/10 px-8 py-6 text-lg"
-              >
-                Register
-              </Button>
+              {isAuthenticated ? (
+                <Button 
+                  size="lg" 
+                  onClick={() => navigate("/dashboard")}
+                  className="bg-white text-academe-700 hover:bg-gray-100 hover:text-academe-800 px-8 py-6 text-lg"
+                >
+                  Go to Dashboard
+                </Button>
+              ) : (
+                <>
+                  <Button 
+                    size="lg" 
+                    onClick={() => handleAuthAction("login")}
+                    className="bg-white text-academe-700 hover:bg-gray-100 hover:text-academe-800 px-8 py-6 text-lg"
+                  >
+                    Login
+                  </Button>
+                  <Button 
+                    size="lg" 
+                    variant="outline" 
+                    onClick={() => handleAuthAction("register")}
+                    className="border-white text-white hover:bg-white/10 px-8 py-6 text-lg"
+                  >
+                    Register
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </section>

@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LayoutDashboard } from "lucide-react";
 import { AuthModal } from "./auth/AuthModal";
 
 export function Navbar() {
@@ -46,7 +46,14 @@ export function Navbar() {
             
             {isAuthenticated ? (
               <>
-                <Link to="/dashboard" className="nav-link">Dashboard</Link>
+                <Button 
+                  variant="ghost" 
+                  className="nav-link"
+                  onClick={() => window.location.href = "/dashboard"}
+                >
+                  <LayoutDashboard className="h-4 w-4 mr-2" />
+                  Dashboard
+                </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-10 w-10 rounded-full">
