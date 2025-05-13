@@ -7,9 +7,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 type ProjectListProps = {
   projects: Project[];
   onProjectClick?: (project: Project) => void;
+  onEditClick?: (project: Project) => void;
+  onDeleteClick?: (project: Project) => void;
+  userRole?: string;
+  userId?: string;
 };
 
-export function ProjectList({ projects, onProjectClick }: ProjectListProps) {
+export function ProjectList({ 
+  projects, 
+  onProjectClick, 
+  onEditClick,
+  onDeleteClick,
+  userRole = "student",
+  userId = "",
+}: ProjectListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   
@@ -63,6 +74,10 @@ export function ProjectList({ projects, onProjectClick }: ProjectListProps) {
               key={project.id}
               project={project}
               onClick={() => onProjectClick && onProjectClick(project)}
+              onEdit={() => onEditClick && onEditClick(project)}
+              onDelete={() => onDeleteClick && onDeleteClick(project)}
+              userRole={userRole}
+              userId={userId}
             />
           ))}
         </div>
