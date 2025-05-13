@@ -21,8 +21,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { TaskForm } from "./TaskForm";
 
 type Task = {
   id: string;
@@ -42,13 +49,33 @@ type Task = {
 interface TaskListProps {
   tasks: Task[];
   projectId: string;
+  projectTitle?: string;
 }
 
-export function TaskList({ tasks, projectId }: TaskListProps) {
+export function TaskList({ tasks, projectId, projectTitle = "Project" }: TaskListProps) {
   const { user } = useAuth();
   const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isViewOpen, setIsViewOpen] = useState(false);
   
   const isUserLeader = user?.role === "leader";
+
+  const handleCreateTask = (formData: any) => {
+    // In a real app, this would be an API call
+    toast.success("Task created successfully");
+    setIsCreateOpen(false);
+  };
+
+  const handleEditTask = (formData: any) => {
+    if (!selectedTask) return;
+    
+    // In a real app, this would update the task via an API
+    toast.success("Task updated successfully");
+    setIsEditOpen(false);
+    setSelectedTask(null);
+  };
 
   const handleDeleteTask = (taskId: string) => {
     // In a real app, this would be an API call
@@ -74,7 +101,11 @@ export function TaskList({ tasks, projectId }: TaskListProps) {
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium">Project Tasks</h3>
         {isUserLeader && (
-          <Button size="sm">
+          <Button 
+            size="sm"
+            onClick={() => setIsCreateOpen(true)}
+            className="bg-academe-500 hover:bg-academe-600"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add Task
           </Button>
@@ -119,12 +150,26 @@ export function TaskList({ tasks, projectId }: TaskListProps) {
                   <TableCell>{task.assignee?.name || "Unassigned"}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => {
+                          setSelectedTask(task);
+                          setIsViewOpen(true);
+                        }}
+                      >
                         <Eye className="h-4 w-4" />
                       </Button>
                       {isUserLeader && (
                         <>
-                          <Button variant="ghost" size="sm">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => {
+                              setSelectedTask(task);
+                              setIsEditOpen(true);
+                            }}
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
                           <Button 
@@ -145,8 +190,96 @@ export function TaskList({ tasks, projectId }: TaskListProps) {
         </div>
       )}
       
+      {/* Create Task Dialog */}
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogContent className="sm:max-w-[500px] border-academe-200">
+          <DialogHeader>
+            <DialogTitle className="text-academe-700">Create New Task</DialogTitle>
+          </DialogHeader>
+          <TaskForm
+            projectId={projectId}
+            projectTitle={projectTitle}
+            onSubmit={handleCreateTask}
+            onCancel={() => setIsCreateOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Task Dialog */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="sm:max-w-[500px] border-academe-200">
+          <DialogHeader>
+            <DialogTitle className="text-academe-700">Edit Task</DialogTitle>
+          </DialogHeader>
+          {selectedTask && (
+            <TaskForm
+              initialData={selectedTask}
+              projectId={selectedTask.projectId}
+              projectTitle={selectedTask.projectTitle}
+              onSubmit={handleEditTask}
+              onCancel={() => setIsEditOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* View Task Dialog */}
+      <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
+        <DialogContent className="sm:max-w-[500px] border-academe-200">
+          <DialogHeader>
+            <DialogTitle className="text-academe-700">Task Details</DialogTitle>
+          </DialogHeader>
+          {selectedTask && (
+            <div className="space-y-4 mt-4">
+              <div>
+                <h3 className="font-medium text-sm text-muted-foreground">Title</h3>
+                <p>{selectedTask.title}</p>
+              </div>
+              <div>
+                <h3 className="font-medium text-sm text-muted-foreground">Description</h3>
+                <p>{selectedTask.description}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="font-medium text-sm text-muted-foreground">Status</h3>
+                  <Badge variant="outline" className={statusColor[selectedTask.status]}>
+                    {selectedTask.status === "in-progress" 
+                      ? "In Progress" 
+                      : selectedTask.status.charAt(0).toUpperCase() + selectedTask.status.slice(1)
+                    }
+                  </Badge>
+                </div>
+                <div>
+                  <h3 className="font-medium text-sm text-muted-foreground">Priority</h3>
+                  <Badge variant="outline" className={priorityColor[selectedTask.priority]}>
+                    {selectedTask.priority.charAt(0).toUpperCase() + selectedTask.priority.slice(1)}
+                  </Badge>
+                </div>
+                <div>
+                  <h3 className="font-medium text-sm text-muted-foreground">Due Date</h3>
+                  <p>{new Date(selectedTask.dueDate).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <h3 className="font-medium text-sm text-muted-foreground">Assignee</h3>
+                  <p>{selectedTask.assignee?.name || "Unassigned"}</p>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button 
+                  onClick={() => setIsViewOpen(false)} 
+                  className="bg-academe-500 hover:bg-academe-600"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      
+      {/* Delete Task Confirmation Dialog */}
       <AlertDialog open={!!deleteTaskId} onOpenChange={() => setDeleteTaskId(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="border-academe-200">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -154,7 +287,7 @@ export function TaskList({ tasks, projectId }: TaskListProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="border-academe-300 hover:bg-academe-50">Cancel</AlertDialogCancel>
             <AlertDialogAction 
               onClick={() => deleteTaskId && handleDeleteTask(deleteTaskId)}
               className="bg-destructive text-destructive-foreground"

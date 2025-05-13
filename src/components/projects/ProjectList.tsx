@@ -50,7 +50,7 @@ export function ProjectList({
             value={statusFilter} 
             onValueChange={setStatusFilter}
           >
-            <SelectTrigger>
+            <SelectTrigger className="border-academe-300 focus:ring-academe-400">
               <SelectValue placeholder="Status Filter" />
             </SelectTrigger>
             <SelectContent>

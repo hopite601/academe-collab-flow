@@ -11,6 +11,7 @@ import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
 import Groups from "./pages/Groups";
 import Tasks from "./pages/Tasks";
+import Reports from "./pages/Reports";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
@@ -31,7 +32,7 @@ const App = () => (
             <Route path="/dashboard/projects/:projectId" element={<ProjectDetail />} />
             <Route path="/dashboard/groups" element={<Groups />} />
             <Route path="/dashboard/tasks" element={<Tasks />} />
-            <Route path="/dashboard/reports" element={<Dashboard />} />
+            <Route path="/dashboard/reports" element={<Reports />} />
             <Route path="/dashboard/profile" element={<Profile />} />
             <Route path="/dashboard/settings" element={<Settings />} />
             {/* Static pages */}
