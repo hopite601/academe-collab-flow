@@ -30,7 +30,7 @@ type ProjectFormValues = z.infer<typeof formSchema>;
 
 interface ProjectFormProps {
   initialData?: Project;
-  onSubmit: (data: ProjectFormValues) => void;
+  onSubmit: (data: ProjectFormValues & { tags: string[] }) => void;
   onCancel: () => void;
 }
 
