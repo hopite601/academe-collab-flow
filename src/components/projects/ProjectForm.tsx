@@ -20,16 +20,18 @@ import { Project } from "./ProjectCard";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 
+// Update the form schema to make tags optional
 const formSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters."),
   description: z.string().min(10, "Description must be at least 10 characters."),
-  tags: z.string().optional(),
+  // Remove tags from the form schema since we'll handle it separately
 });
 
 type ProjectFormValues = z.infer<typeof formSchema>;
 
 interface ProjectFormProps {
   initialData?: Project;
+  // Update the interface to specify that onSubmit receives ProjectFormValues plus tags array
   onSubmit: (data: ProjectFormValues & { tags: string[] }) => void;
   onCancel: () => void;
 }
@@ -45,12 +47,10 @@ export function ProjectForm({ initialData, onSubmit, onCancel }: ProjectFormProp
       ? {
           title: initialData.title,
           description: initialData.description,
-          tags: initialData.tags?.join(", ") || "",
         }
       : {
           title: "",
           description: "",
-          tags: "",
         },
   });
 

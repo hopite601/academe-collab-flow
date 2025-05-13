@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -111,7 +110,7 @@ const Projects = () => {
       members: 0,
       status: "open",
       progress: 0,
-      tags: ["New Project"]
+      tags: projectData.tags || []
     };
     
     // Add the new project to the list
@@ -132,6 +131,7 @@ const Projects = () => {
             description: projectData.description,
             teamLeaderName: projectData.teamLeaderName,
             teamLeaderId: projectData.teamLeaderId || project.teamLeaderId,
+            tags: projectData.tags || project.tags
           }
         : project
     );
