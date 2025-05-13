@@ -241,7 +241,7 @@ export function MemberFeedback() {
                 <div>
                   <h3 className="text-xl font-semibold">{selectedMember.name}</h3>
                   <p className="text-muted-foreground">{selectedMember.role}</p>
-                  <Badge className={getPerformanceBadge(selectedMember.performance)} className="mt-1">
+                  <Badge className={getPerformanceBadge(selectedMember.performance)}>
                     {selectedMember.performance.charAt(0).toUpperCase() + selectedMember.performance.slice(1)}
                   </Badge>
                 </div>

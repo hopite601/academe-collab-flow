@@ -15,6 +15,7 @@ export type GroupMember = {
 export type Group = {
   id: string;
   name: string;
+  description?: string; // Added description field
   projectId: string;
   projectTitle: string;
   members: GroupMember[];

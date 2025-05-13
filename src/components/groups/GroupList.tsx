@@ -22,17 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { GroupForm } from "./GroupForm";
-
-type Group = {
-  id: string;
-  name: string;
-  description: string;
-  leaderId: string;
-  leaderName: string;
-  members: number | { id: string, name: string, role?: string }[];
-  projectId: string;
-  projectTitle: string;
-};
+import { Group, GroupMember } from "./GroupCard";
 
 interface GroupListProps {
   groups: Group[];
@@ -55,13 +45,12 @@ export function GroupList({ groups, projectId, projectTitle = "Project" }: Group
       id: `group-${Date.now()}`,
       name: formData.name,
       description: formData.description,
-      leaderId: `leader-${Date.now()}`,
-      leaderName: formData.leaderName,
-      members: [
-        { id: `leader-${Date.now()}`, name: formData.leaderName, role: "leader" }
-      ],
       projectId,
-      projectTitle
+      projectTitle,
+      progress: 0,
+      members: [
+        { id: `leader-${Date.now()}`, name: formData.leaderName, role: "leader" as const }
+      ],
     };
     
     // This would update your state with the new group in a real app
@@ -85,9 +74,6 @@ export function GroupList({ groups, projectId, projectTitle = "Project" }: Group
   };
 
   const getMemberCount = (group: Group) => {
-    if (typeof group.members === 'number') {
-      return group.members;
-    }
     return group.members.length;
   };
 
@@ -131,7 +117,7 @@ export function GroupList({ groups, projectId, projectTitle = "Project" }: Group
                 <div className="flex flex-col space-y-2">
                   <div className="text-sm">
                     <span className="text-muted-foreground">Team Leader: </span>
-                    <span>{group.leaderName}</span>
+                    <span>{group.members.find(m => m.role === "leader")?.name || "Not assigned"}</span>
                   </div>
                   
                   <div className="flex justify-end mt-4 gap-2">

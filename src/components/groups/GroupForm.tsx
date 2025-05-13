@@ -40,7 +40,7 @@ export function GroupForm({ initialData, projectId, projectTitle, onSubmit, onCa
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: initialData?.name || "",
-      description: initialData && typeof initialData.description === "string" ? initialData.description : "",
+      description: initialData?.description || "",
       leaderName: initialData?.members?.find(m => m.role === "leader")?.name || "",
     },
   });
