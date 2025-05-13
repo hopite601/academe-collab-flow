@@ -14,40 +14,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { 
-  Popover, 
-  PopoverContent, 
-  PopoverTrigger 
-} from "@/components/ui/popover";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { 
-  Command, 
-  CommandEmpty, 
-  CommandGroup, 
-  CommandInput, 
-  CommandItem 
-} from "@/components/ui/command";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Project } from "./ProjectCard";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
 
 const formSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters."),
   description: z.string().min(10, "Description must be at least 10 characters."),
-  teamLeaderId: z.string().optional(),
-  teamLeaderName: z.string().min(3, "Team leader name is required."),
+  tags: z.string().optional(),
 });
 
 type ProjectFormValues = z.infer<typeof formSchema>;
-
-// Mock data for team leaders
-const mockLeaders = [
-  { id: "leader1", name: "Jane Leader" },
-  { id: "leader2", name: "Mike Stewart" },
-  { id: "leader3", name: "Alex Johnson" },
-  { id: "leader4", name: "Sarah Williams" },
-  { id: "leader5", name: "Chris Davis" },
-];
 
 interface ProjectFormProps {
   initialData?: Project;
@@ -57,9 +36,8 @@ interface ProjectFormProps {
 
 export function ProjectForm({ initialData, onSubmit, onCancel }: ProjectFormProps) {
   const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [leaders, setLeaders] = useState(mockLeaders);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [tags, setTags] = useState<string[]>(initialData?.tags || []);
+  const [tagInput, setTagInput] = useState("");
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(formSchema),
@@ -67,46 +45,53 @@ export function ProjectForm({ initialData, onSubmit, onCancel }: ProjectFormProp
       ? {
           title: initialData.title,
           description: initialData.description,
-          teamLeaderId: initialData.teamLeaderId || "",
-          teamLeaderName: initialData.teamLeaderName || "",
+          tags: initialData.tags?.join(", ") || "",
         }
       : {
           title: "",
           description: "",
-          teamLeaderId: "",
-          teamLeaderName: "",
+          tags: "",
         },
   });
-
-  // Filter leaders based on search term (simulate API search)
-  useEffect(() => {
-    const fetchLeaders = async () => {
-      // This would be an API call in a real application
-      if (searchTerm) {
-        const filtered = mockLeaders.filter(leader => 
-          leader.name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        setLeaders(filtered);
-      } else {
-        setLeaders(mockLeaders);
-      }
-    };
-
-    fetchLeaders();
-  }, [searchTerm]);
 
   const handleSubmit = async (data: ProjectFormValues) => {
     try {
       setLoading(true);
       // In a real app, we'd make an API call here
       await new Promise(resolve => setTimeout(resolve, 1000)); // Simulates API call
-      onSubmit(data);
+      
+      // Process form data with tags
+      const formData = {
+        ...data,
+        tags: tags,
+      };
+      
+      onSubmit(formData);
       toast.success(initialData ? "Project updated" : "Project created");
     } catch (error) {
       toast.error("Something went wrong");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addTag();
+    }
+  };
+
+  const addTag = () => {
+    const trimmedTag = tagInput.trim();
+    if (trimmedTag && !tags.includes(trimmedTag)) {
+      setTags([...tags, trimmedTag]);
+      setTagInput("");
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
   return (
@@ -119,7 +104,11 @@ export function ProjectForm({ initialData, onSubmit, onCancel }: ProjectFormProp
             <FormItem>
               <FormLabel>Project Name</FormLabel>
               <FormControl>
-                <Input placeholder="Enter project name" {...field} />
+                <Input 
+                  placeholder="Enter project name" 
+                  {...field} 
+                  className="border-academe-300 focus:ring-academe-400"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -135,7 +124,7 @@ export function ProjectForm({ initialData, onSubmit, onCancel }: ProjectFormProp
               <FormControl>
                 <Textarea 
                   placeholder="Enter project description" 
-                  className="resize-none min-h-[100px]" 
+                  className="resize-none min-h-[100px] border-academe-300 focus:ring-academe-400" 
                   {...field} 
                 />
               </FormControl>
@@ -144,65 +133,40 @@ export function ProjectForm({ initialData, onSubmit, onCancel }: ProjectFormProp
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="teamLeaderName"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Team Leader's Name</FormLabel>
-              <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={open}
-                      className="w-full justify-between"
-                    >
-                      {field.value
-                        ? field.value
-                        : "Select team leader"}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-[300px] p-0">
-                  <Command>
-                    <CommandInput 
-                      placeholder="Search leader..." 
-                      onValueChange={setSearchTerm}
-                    />
-                    <CommandEmpty>No team leader found.</CommandEmpty>
-                    <CommandGroup>
-                      {leaders.map((leader) => (
-                        <CommandItem
-                          value={leader.name}
-                          key={leader.id}
-                          onSelect={() => {
-                            form.setValue("teamLeaderName", leader.name);
-                            form.setValue("teamLeaderId", leader.id);
-                            setOpen(false);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              leader.name === field.value
-                                ? "opacity-100"
-                                : "opacity-0"
-                            )}
-                          />
-                          {leader.name}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="space-y-2">
+          <FormLabel>Tags</FormLabel>
+          <div className="flex flex-wrap gap-2 mb-2">
+            {tags.map((tag) => (
+              <Badge 
+                key={tag} 
+                className="bg-academe-100 text-academe-800 hover:bg-academe-200 px-3 py-1"
+              >
+                {tag}
+                <button 
+                  type="button" 
+                  onClick={() => removeTag(tag)} 
+                  className="ml-2 text-academe-700 hover:text-academe-900"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))}
+          </div>
+          <div className="flex">
+            <Input
+              type="text"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={handleTagInputKeyDown}
+              onBlur={addTag}
+              placeholder="Enter tags separated by commas"
+              className="border-academe-300 focus:ring-academe-400"
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Press Enter or comma to add a tag
+          </p>
+        </div>
 
         <div className="flex justify-end gap-2 pt-4">
           <Button 
@@ -210,12 +174,14 @@ export function ProjectForm({ initialData, onSubmit, onCancel }: ProjectFormProp
             variant="outline" 
             onClick={onCancel}
             disabled={loading}
+            className="border-academe-300 hover:bg-academe-50"
           >
             Cancel
           </Button>
           <Button 
             type="submit" 
             disabled={loading}
+            className="bg-academe-500 hover:bg-academe-600"
           >
             {loading ? "Saving..." : initialData ? "Update Project" : "Create Project"}
           </Button>

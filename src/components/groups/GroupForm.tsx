@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -16,6 +16,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Group } from "./GroupCard";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   name: z.string().min(3, "Group name must be at least 3 characters."),
@@ -24,6 +38,18 @@ const formSchema = z.object({
 });
 
 type GroupFormValues = z.infer<typeof formSchema>;
+
+// Mock data for leader name suggestions
+const mockLeaders = [
+  "Jane Doe",
+  "John Smith",
+  "Mike Johnson",
+  "Sara Williams",
+  "Alex Brown",
+  "Taylor Green",
+  "Chris Evans",
+  "Robin Lee"
+];
 
 interface GroupFormProps {
   initialData?: Partial<Group>;
@@ -35,6 +61,9 @@ interface GroupFormProps {
 
 export function GroupForm({ initialData, projectId, projectTitle, onSubmit, onCancel }: GroupFormProps) {
   const [loading, setLoading] = useState(false);
+  const [leaderSuggestions, setLeaderSuggestions] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const form = useForm<GroupFormValues>({
     resolver: zodResolver(formSchema),
@@ -44,6 +73,19 @@ export function GroupForm({ initialData, projectId, projectTitle, onSubmit, onCa
       leaderName: initialData?.members?.find(m => m.role === "leader")?.name || "",
     },
   });
+
+  // Filter leader suggestions based on input
+  useEffect(() => {
+    if (searchTerm) {
+      // In a real app, this would be an API call
+      const filteredLeaders = mockLeaders.filter(leader => 
+        leader.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setLeaderSuggestions(filteredLeaders);
+    } else {
+      setLeaderSuggestions([]);
+    }
+  }, [searchTerm]);
 
   const handleSubmit = async (data: GroupFormValues) => {
     try {
@@ -57,6 +99,21 @@ export function GroupForm({ initialData, projectId, projectTitle, onSubmit, onCa
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLeaderInputChange = (value: string) => {
+    form.setValue("leaderName", value);
+    setSearchTerm(value);
+    if (value) {
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+  const selectLeader = (leader: string) => {
+    form.setValue("leaderName", leader);
+    setShowSuggestions(false);
   };
 
   return (
@@ -104,13 +161,33 @@ export function GroupForm({ initialData, projectId, projectTitle, onSubmit, onCa
           render={({ field }) => (
             <FormItem>
               <FormLabel>Team Leader's Name</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="Enter team leader name" 
-                  {...field}
-                  className="border-academe-300 focus:ring-academe-400"
-                />
-              </FormControl>
+              <div className="relative">
+                <FormControl>
+                  <Input 
+                    placeholder="Start typing leader name" 
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      handleLeaderInputChange(e.target.value);
+                    }}
+                    onFocus={() => setShowSuggestions(true)}
+                    className="border-academe-300 focus:ring-academe-400"
+                  />
+                </FormControl>
+                {showSuggestions && leaderSuggestions.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-academe-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                    {leaderSuggestions.map((leader) => (
+                      <div 
+                        key={leader} 
+                        className="px-4 py-2 hover:bg-academe-100 cursor-pointer"
+                        onClick={() => selectLeader(leader)}
+                      >
+                        {leader}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <FormMessage />
             </FormItem>
           )}
@@ -120,7 +197,10 @@ export function GroupForm({ initialData, projectId, projectTitle, onSubmit, onCa
           <Button 
             type="button" 
             variant="outline" 
-            onClick={onCancel}
+            onClick={() => {
+              setShowSuggestions(false);
+              onCancel();
+            }}
             disabled={loading}
             className="border-academe-300 hover:bg-academe-50"
           >
