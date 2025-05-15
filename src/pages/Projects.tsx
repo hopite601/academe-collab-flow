@@ -24,6 +24,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { 
+  getProjects, 
+  createProject, 
+  updateProject, 
+  deleteProject,
+  ProjectInput 
+} from "@/services/projectService";
 
 const Projects = () => {
   const { user } = useAuth();
@@ -34,123 +41,97 @@ const Projects = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
   
-  // Mock data loading
+  // Fetch projects from API on component mount
   useEffect(() => {
-    // Generate mock project data
-    const mockProjects: Project[] = [
-      {
-        id: "project1",
-        title: "Research on Machine Learning Applications",
-        description: "A comprehensive study of machine learning applications in healthcare",
-        mentorName: "Dr. Smith",
-        mentorId: "mentor1",
-        teamLeaderId: user?.role === "leader" ? user.id : "leader1",
-        teamLeaderName: user?.role === "leader" ? user.name : "Jane Leader",
-        members: 4,
-        status: "in-progress",
-        progress: 35,
-        tags: ["Machine Learning", "Healthcare", "Research"]
-      },
-      {
-        id: "project2",
-        title: "Sustainable Energy Solutions",
-        description: "Exploring renewable energy sources and their implementation in urban settings",
-        mentorName: "Dr. Johnson",
-        mentorId: "mentor2",
-        teamLeaderId: "leader2",
-        teamLeaderName: "Mike Stewart",
-        members: 5,
-        status: "open",
-        progress: 0,
-        tags: ["Renewable Energy", "Sustainability", "Urban Planning"]
-      },
-      {
-        id: "project3",
-        title: "Mobile App Development",
-        description: "Creating a mobile application for student mental health support",
-        mentorName: user?.role === "mentor" ? user.name : "Dr. Williams",
-        mentorId: user?.role === "mentor" ? user.id : "mentor3",
-        members: 3,
-        status: "open",
-        progress: 0,
-        tags: ["Mobile Development", "Mental Health", "Student Support"]
-      },
-      {
-        id: "project4",
-        title: "Data Analysis of Student Performance",
-        description: "Analyzing factors affecting student academic performance",
-        mentorName: "Dr. Brown",
-        mentorId: "mentor4",
-        members: 2,
-        status: "completed",
-        progress: 100,
-        tags: ["Data Analysis", "Education", "Statistics"]
+    const fetchProjects = async () => {
+      try {
+        setLoading(true);
+        const data = await getProjects();
+        setProjects(data);
+      } catch (error) {
+        toast.error("Failed to load projects");
+        console.error(error);
+      } finally {
+        setLoading(false);
       }
-    ];
-
-    setProjects(mockProjects);
-  }, [user]);
+    };
+    
+    fetchProjects();
+  }, []);
 
   const handleProjectClick = (project: Project) => {
     navigate(`/dashboard/projects/${project.id}`);
   };
 
   // Handle project creation
-  const handleCreateProject = (projectData: any) => {
-    // Create new project object
-    const newProject: Project = {
-      id: `project${projects.length + 1}`,
-      title: projectData.title,
-      description: projectData.description,
-      mentorName: user?.role === "mentor" ? user.name : projectData.mentorName,
-      mentorId: user?.role === "mentor" ? user.id : `mentor${projects.length + 1}`,
-      teamLeaderName: projectData.teamLeaderName,
-      teamLeaderId: projectData.teamLeaderId || `leader${projects.length + 1}`,
-      members: 0,
-      status: "open",
-      progress: 0,
-      tags: projectData.tags || []
-    };
-    
-    // Add the new project to the list
-    setProjects([...projects, newProject]);
-    setIsCreateDialogOpen(false);
-    toast.success("Project created successfully");
+  const handleCreateProject = async (projectData: ProjectInput) => {
+    try {
+      setLoading(true);
+      const newProject = await createProject({
+        title: projectData.title,
+        description: projectData.description,
+        tags: projectData.tags,
+        mentorName: user?.role === "mentor" ? user.name : undefined,
+        teamLeaderName: projectData.teamLeaderName
+      });
+      
+      setProjects(prev => [...prev, newProject]);
+      setIsCreateDialogOpen(false);
+      toast.success("Project created successfully");
+    } catch (error) {
+      toast.error("Failed to create project");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleEditProject = (projectData: any) => {
+  const handleEditProject = async (projectData: ProjectInput) => {
     if (!selectedProject) return;
     
-    // Update the project
-    const updatedProjects = projects.map(project =>
-      project.id === selectedProject.id
-        ? {
-            ...project,
-            title: projectData.title,
-            description: projectData.description,
-            teamLeaderName: projectData.teamLeaderName,
-            teamLeaderId: projectData.teamLeaderId || project.teamLeaderId,
-            tags: projectData.tags || project.tags
-          }
-        : project
-    );
-    
-    setProjects(updatedProjects);
-    setIsEditDialogOpen(false);
-    setSelectedProject(null);
-    toast.success("Project updated successfully");
+    try {
+      setLoading(true);
+      const updatedProject = await updateProject(selectedProject.id, {
+        title: projectData.title,
+        description: projectData.description,
+        tags: projectData.tags,
+        teamLeaderName: projectData.teamLeaderName
+      });
+      
+      setProjects(prev => 
+        prev.map(p => p.id === selectedProject.id ? updatedProject : p)
+      );
+      
+      setIsEditDialogOpen(false);
+      setSelectedProject(null);
+      toast.success("Project updated successfully");
+    } catch (error) {
+      toast.error("Failed to update project");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDeleteProject = () => {
+  const handleDeleteProject = async () => {
     if (!selectedProject) return;
     
-    // Remove the project
-    const filteredProjects = projects.filter(project => project.id !== selectedProject.id);
-    setProjects(filteredProjects);
-    setIsDeleteDialogOpen(false);
-    setSelectedProject(null);
-    toast.success("Project deleted successfully");
+    try {
+      setLoading(true);
+      await deleteProject(selectedProject.id);
+      
+      setProjects(prev => prev.filter(p => p.id !== selectedProject.id));
+      setIsDeleteDialogOpen(false);
+      setSelectedProject(null);
+      toast.success("Project deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete project");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEditClick = (project: Project) => {
@@ -193,6 +174,7 @@ const Projects = () => {
           onDeleteClick={handleDeleteClick}
           userRole={user?.role || "student"}
           userId={user?.id || ""}
+          loading={loading}
         />
       </div>
       
@@ -205,6 +187,7 @@ const Projects = () => {
           <ProjectForm 
             onSubmit={handleCreateProject}
             onCancel={() => setIsCreateDialogOpen(false)}
+            isSubmitting={loading}
           />
         </DialogContent>
       </Dialog>
@@ -220,6 +203,7 @@ const Projects = () => {
               initialData={selectedProject}
               onSubmit={handleEditProject}
               onCancel={() => setIsEditDialogOpen(false)}
+              isSubmitting={loading}
             />
           )}
         </DialogContent>
@@ -240,6 +224,7 @@ const Projects = () => {
             <AlertDialogAction 
               onClick={handleDeleteProject}
               className="bg-destructive text-destructive-foreground"
+              disabled={loading}
             >
               Delete
             </AlertDialogAction>

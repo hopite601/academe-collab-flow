@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,19 +10,28 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Eye, Edit, Trash, Users, MoreVertical } from "lucide-react";
 
-export type Project = {
+export interface Project {
   id: string;
   title: string;
   description: string;
   mentorName: string;
   mentorId: string;
-  teamLeaderId?: string;
   teamLeaderName?: string;
+  teamLeaderId?: string;
   members: number;
   status: "open" | "in-progress" | "completed";
   progress: number;
   tags: string[];
-};
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface GroupMember {
+  id: string;
+  name: string;
+  role: "leader" | "member";
+  avatar?: string;
+}
 
 type ProjectCardProps = {
   project: Project;
