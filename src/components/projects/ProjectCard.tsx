@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,29 +10,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Eye, Edit, Trash, Users, MoreVertical } from "lucide-react";
-
-export interface Project {
-  id: string;
-  title: string;
-  description: string;
-  mentorName: string;
-  mentorId: string;
-  teamLeaderName?: string;
-  teamLeaderId?: string;
-  members: number;
-  status: "open" | "in-progress" | "completed";
-  progress: number;
-  tags: string[];
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface GroupMember {
-  id: string;
-  name: string;
-  role: "leader" | "member";
-  avatar?: string;
-}
+import { Project } from "@/types/group";
 
 type ProjectCardProps = {
   project: Project;
@@ -94,8 +73,8 @@ export function ProjectCard({
           </DropdownMenu>
         )}
         
-        <Badge className={statusColor[project.status]} variant="outline">
-          {project.status === "in-progress" ? "In Progress" : project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+        <Badge className={statusColor[project.status || "open"]} variant="outline">
+          {(project.status === "in-progress" ? "In Progress" : project.status?.charAt(0).toUpperCase() + project.status?.slice(1)) || "Open"}
         </Badge>
       </CardHeader>
       <CardContent className="pb-2 flex-1">
@@ -103,13 +82,13 @@ export function ProjectCard({
           <div>
             <div className="flex justify-between text-sm mb-1">
               <span className="text-muted-foreground">Progress</span>
-              <span className="font-medium">{project.progress}%</span>
+              <span className="font-medium">{project.progress || 0}%</span>
             </div>
-            <Progress value={project.progress} className="h-2" />
+            <Progress value={project.progress || 0} className="h-2" />
           </div>
           
           <div className="flex flex-wrap gap-1">
-            {project.tags.map((tag) => (
+            {project.tags?.map((tag) => (
               <Badge key={tag} variant="secondary" className="text-xs">
                 {tag}
               </Badge>
@@ -119,7 +98,7 @@ export function ProjectCard({
           <div className="flex justify-between text-sm">
             <div className="flex items-center">
               <Users className="h-4 w-4 mr-1 text-muted-foreground" />
-              <span>{project.members} members</span>
+              <span>{project.members || 0} members</span>
             </div>
             <div>
               <span className="text-muted-foreground">Mentor: </span>

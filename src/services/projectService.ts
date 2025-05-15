@@ -1,29 +1,13 @@
-
+import { Project } from "@/types/group";
 import { toast } from "sonner";
 
-// Define the project interfaces (matching the backend expectations)
+// Define the project input interface
 export interface ProjectInput {
   title: string;
   description: string;
   tags: string[];
   mentorName?: string;
   teamLeaderName?: string;
-}
-
-export interface Project {
-  id: string;
-  title: string;
-  description: string;
-  mentorName: string;
-  mentorId: string;
-  teamLeaderName?: string;
-  teamLeaderId?: string;
-  members: number;
-  status: "open" | "in-progress" | "completed";
-  progress: number;
-  tags: string[];
-  createdAt?: string;
-  updatedAt?: string;
 }
 
 // Base API URL - would come from environment variables in a real app

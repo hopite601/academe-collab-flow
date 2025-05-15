@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import { ProjectInput } from "@/services/projectService";
+import { Project } from "@/types/group";
 
 // Update the form schema for server validation
 const formSchema = z.object({
@@ -30,7 +31,7 @@ const formSchema = z.object({
 type ProjectFormValues = z.infer<typeof formSchema>;
 
 interface ProjectFormProps {
-  initialData?: any; // We'll type-cast internally
+  initialData?: Project;
   onSubmit: (data: ProjectInput) => void;
   onCancel: () => void;
   isSubmitting?: boolean;
@@ -45,7 +46,7 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isSubmitting = fa
     defaultValues: initialData 
       ? {
           title: initialData.title,
-          description: initialData.description,
+          description: initialData.description || "",
           teamLeaderName: initialData.teamLeaderName || "",
         }
       : {
@@ -58,8 +59,10 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isSubmitting = fa
   const handleSubmit = async (data: ProjectFormValues) => {
     // Combine form data with tags
     const formData: ProjectInput = {
-      ...data,
+      title: data.title,
+      description: data.description,
       tags: tags,
+      teamLeaderName: data.teamLeaderName,
     };
     
     onSubmit(formData);

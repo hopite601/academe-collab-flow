@@ -1,17 +1,19 @@
 
 import { useState } from "react";
-import { ProjectCard, Project } from "./ProjectCard";
+import { Project } from "@/types/group";
+import { ProjectCard } from "./ProjectCard";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-type ProjectListProps = {
+export interface ProjectListProps {
   projects: Project[];
   onProjectClick?: (project: Project) => void;
   onEditClick?: (project: Project) => void;
   onDeleteClick?: (project: Project) => void;
   userRole?: string;
   userId?: string;
-};
+  loading?: boolean;
+}
 
 export function ProjectList({ 
   projects, 
@@ -20,14 +22,15 @@ export function ProjectList({
   onDeleteClick,
   userRole = "student",
   userId = "",
+  loading = false,
 }: ProjectListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   
   const filteredProjects = projects.filter((project) => {
     const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+                         (project.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
+                         (project.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())) ?? false);
     
     const matchesStatus = statusFilter === "all" || project.status === statusFilter;
     
