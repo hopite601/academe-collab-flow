@@ -1,101 +1,123 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Student } from "@/types/group";
 import { getAvailableStudents } from "@/services/groupService";
-import { CheckIcon, SearchIcon } from "lucide-react";
 
 interface AddMemberDialogProps {
+  groupId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddMember: (member: Omit<Student, "role">) => void;
+  onAddMember: (studentId: string) => void;
   existingMemberIds: string[];
-  isLoading: boolean;
 }
 
 export function AddMemberDialog({
+  groupId,
   open,
   onOpenChange,
   onAddMember,
-  existingMemberIds,
-  isLoading,
+  existingMemberIds
 }: AddMemberDialogProps) {
-  const [searchTerm, setSearchTerm] = useState("");
-  
-  const { data: students = [], isLoading: isLoadingStudents } = useQuery({
+  const [loading, setLoading] = useState(false);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+
+  // Fetch available students
+  const { data: students = [], isLoading } = useQuery({
     queryKey: ["availableStudents"],
-    queryFn: getAvailableStudents,
-    enabled: open,
+    queryFn: () => getAvailableStudents(),
   });
-  
-  // Filter students based on search and exclude existing members
-  const filteredStudents = students
-    .filter(student => !existingMemberIds.includes(student.id))
-    .filter(student => 
-      student.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      student.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+
+  // Filter out students who are already members
+  const availableStudents = students.filter(
+    student => !existingMemberIds.includes(student.id)
+  );
+
+  const handleAddMember = async () => {
+    if (!selectedStudentId) return;
     
+    try {
+      setLoading(true);
+      await onAddMember(selectedStudentId);
+      onOpenChange(false);
+      setSelectedStudentId(null);
+    } catch (error) {
+      console.error("Failed to add member:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add Group Member</DialogTitle>
+          <DialogTitle>Add Member to Group</DialogTitle>
+          <DialogDescription>
+            Select a student to add to your group.
+          </DialogDescription>
         </DialogHeader>
-        
-        <div className="relative">
-          <SearchIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search for students..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        
-        <div className="max-h-[300px] overflow-y-auto">
-          {isLoadingStudents ? (
-            <div className="flex justify-center py-4">
-              <p>Loading students...</p>
+
+        <div className="py-4">
+          {isLoading ? (
+            <div className="flex items-center justify-center p-4">
+              <div className="text-sm text-muted-foreground">Loading students...</div>
             </div>
-          ) : filteredStudents.length === 0 ? (
-            <div className="flex justify-center py-4">
-              <p className="text-muted-foreground">No students found</p>
+          ) : availableStudents.length === 0 ? (
+            <div className="text-center py-6">
+              <p className="text-sm text-muted-foreground">No available students found</p>
             </div>
           ) : (
-            <div className="divide-y">
-              {filteredStudents.map((student) => (
-                <div
-                  key={student.id}
-                  className="flex items-center justify-between py-3 px-1"
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={student.avatar} />
+            <ScrollArea className="h-[250px] pr-4">
+              <div className="space-y-2">
+                {availableStudents.map((student) => (
+                  <div
+                    key={student.id}
+                    className={`flex items-center p-3 rounded-lg cursor-pointer transition-colors ${
+                      selectedStudentId === student.id
+                        ? "bg-primary/10 dark:bg-primary/20"
+                        : "hover:bg-muted"
+                    }`}
+                    onClick={() => setSelectedStudentId(student.id)}
+                  >
+                    <Avatar className="h-9 w-9 mr-3">
+                      <AvatarImage src={student.avatar} alt={student.name} />
                       <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="text-sm font-medium">{student.name}</p>
-                      <p className="text-xs text-muted-foreground">{student.email}</p>
+                      <p className="font-medium">{student.name}</p>
+                      <p className="text-sm text-muted-foreground">{student.email}</p>
                     </div>
                   </div>
-                  <Button
-                    size="sm"
-                    onClick={() => onAddMember(student)}
-                    disabled={isLoading}
-                  >
-                    <CheckIcon className="h-4 w-4 mr-2" />
-                    Add
-                  </Button>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </ScrollArea>
           )}
         </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleAddMember}
+            disabled={!selectedStudentId || loading}
+            className="bg-academe-500 hover:bg-academe-600"
+          >
+            {loading ? "Adding..." : "Add Member"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

@@ -1,274 +1,185 @@
 
-import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  AlertDialog, 
-  AlertDialogAction, 
-  AlertDialogCancel, 
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
-  AlertDialogTitle 
-} from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
-import { ArrowLeft, Trash, UserPlus, Users } from "lucide-react";
 import { GroupDetailHeader } from "@/components/groups/GroupDetailHeader";
 import { GroupMemberList } from "@/components/groups/GroupMemberList";
 import { AddMemberDialog } from "@/components/groups/AddMemberDialog";
 import { ChangeLeaderDialog } from "@/components/groups/ChangeLeaderDialog";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   getGroupById, 
-  deleteGroup, 
-  addGroupMember, 
-  removeGroupMember, 
+  addMemberToGroup, 
+  removeMemberFromGroup, 
   changeGroupLeader 
 } from "@/services/groupService";
-import { GroupMember } from "@/types/group";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useAuth } from "@/contexts/AuthContext";
+import { TaskList } from "@/components/tasks/TaskList";
+import { getTasks } from "@/services/taskService";
+import { Group, Task } from "@/types/group";
 
 const GroupDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const { user } = useAuth();
-  const isMentor = user?.role === "mentor";
   
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false);
-  const [isChangeLeaderDialogOpen, setIsChangeLeaderDialogOpen] = useState(false);
+  const [group, setGroup] = useState<Group | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
+  const [isChangeLeaderOpen, setIsChangeLeaderOpen] = useState(false);
   
-  const { data: group, isLoading } = useQuery({
-    queryKey: ["group", id],
-    queryFn: () => getGroupById(id!),
-    enabled: !!id
-  });
+  // Determine if the current user is the group leader
+  const isGroupLeader = group?.members.some(
+    member => member.id === user?.id && member.role === "leader"
+  );
   
-  const deleteGroupMutation = useMutation({
-    mutationFn: () => deleteGroup(id!),
-    onSuccess: () => {
-      toast.success("Group deleted successfully");
-      queryClient.invalidateQueries({ queryKey: ["groups"] });
-      navigate("/dashboard/groups");
-    },
-    onError: () => {
-      toast.error("Failed to delete group");
-    }
-  });
-  
-  const addMemberMutation = useMutation({
-    mutationFn: (member: Omit<GroupMember, "role">) => 
-      addGroupMember(id!, member),
-    onSuccess: () => {
+  // Get existing member IDs
+  const existingMemberIds = group?.members.map(member => member.id) || [];
+
+  // Fetch group data
+  useEffect(() => {
+    const fetchGroupData = async () => {
+      if (!id) return;
+      
+      try {
+        setLoading(true);
+        
+        // Fetch group details
+        const groupData = await getGroupById(id);
+        setGroup(groupData);
+        
+        // Fetch tasks for this group
+        const tasksData = await getTasks();
+        setTasks(tasksData.filter(task => task.groupId === id));
+        
+      } catch (error) {
+        console.error("Failed to fetch group data:", error);
+        toast.error("Failed to load group details");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchGroupData();
+  }, [id]);
+
+  // Handle adding a member to the group
+  const handleAddMember = async (studentId: string) => {
+    if (!id) return;
+    
+    try {
+      const updatedGroup = await addMemberToGroup(id, studentId);
+      
+      setGroup(updatedGroup);
       toast.success("Member added successfully");
-      queryClient.invalidateQueries({ queryKey: ["group", id] });
-      setIsAddMemberDialogOpen(false);
-    },
-    onError: () => {
-      toast.error("Failed to add member");
+    } catch (error) {
+      console.error("Failed to add member:", error);
+      toast.error("Failed to add member to group");
+      throw error; // Re-throw to be caught by the dialog
     }
-  });
-  
-  const removeMemberMutation = useMutation({
-    mutationFn: (memberId: string) => removeGroupMember(id!, memberId),
-    onSuccess: () => {
-      toast.success("Member removed successfully");
-      queryClient.invalidateQueries({ queryKey: ["group", id] });
-    },
-    onError: () => {
-      toast.error("Failed to remove member");
+  };
+
+  // Handle removing a member from the group
+  const handleRemoveMember = async (memberId: string) => {
+    if (!id || !group) return;
+    
+    // Prevent removing the last member or the leader
+    if (group.members.length === 1) {
+      toast.error("Cannot remove the last member of the group");
+      return;
     }
-  });
-  
-  const changeLeaderMutation = useMutation({
-    mutationFn: (newLeaderId: string) => changeGroupLeader(id!, newLeaderId),
-    onSuccess: () => {
-      toast.success("Group leader changed successfully");
-      queryClient.invalidateQueries({ queryKey: ["group", id] });
-      setIsChangeLeaderDialogOpen(false);
-    },
-    onError: () => {
-      toast.error("Failed to change group leader");
-    }
-  });
-  
-  if (isLoading) {
-    return (
-      <DashboardLayout>
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Skeleton className="h-8 w-[250px]" />
-              <Skeleton className="h-4 w-[350px]" />
-            </div>
-            <Skeleton className="h-10 w-[100px]" />
-          </div>
-          
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-[150px]" />
-              <Skeleton className="h-4 w-[250px]" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-[300px] w-full" />
-            </CardContent>
-          </Card>
-        </div>
-      </DashboardLayout>
-    );
-  }
-  
-  if (!group) {
-    return (
-      <DashboardLayout>
-        <div className="flex flex-col items-center justify-center h-[70vh]">
-          <h1 className="text-2xl font-bold mb-4">Group Not Found</h1>
-          <p className="text-muted-foreground mb-6">The group you're looking for doesn't exist or has been removed.</p>
-          <Button onClick={() => navigate("/dashboard/groups")}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Groups
-          </Button>
-        </div>
-      </DashboardLayout>
-    );
-  }
-  
-  const handleRemoveMember = (memberId: string) => {
-    // Prevent removing the leader
+    
     const isLeader = group.members.find(m => m.id === memberId)?.role === "leader";
     if (isLeader) {
       toast.error("Cannot remove the group leader. Change the leader first.");
       return;
     }
     
-    removeMemberMutation.mutate(memberId);
+    try {
+      const updatedGroup = await removeMemberFromGroup(id, memberId);
+      
+      setGroup(updatedGroup);
+      toast.success("Member removed successfully");
+    } catch (error) {
+      console.error("Failed to remove member:", error);
+      toast.error("Failed to remove member from group");
+    }
+  };
+
+  // Handle changing the group leader
+  const handleChangeLeader = async (memberId: string) => {
+    if (!id) return;
+    
+    try {
+      const updatedGroup = await changeGroupLeader(id, memberId);
+      
+      setGroup(updatedGroup);
+      toast.success("Group leader changed successfully");
+    } catch (error) {
+      console.error("Failed to change leader:", error);
+      toast.error("Failed to change group leader");
+      throw error; // Re-throw to be caught by the dialog
+    }
   };
   
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <GroupDetailHeader 
-          group={group} 
-          onBack={() => navigate("/dashboard/groups")}
-          onDelete={() => setIsDeleteDialogOpen(true)}
-          canManage={isMentor}
-        />
+        {/* Group Header */}
+        {group && (
+          <GroupDetailHeader
+            group={group}
+            isLoading={loading}
+            isLeader={isGroupLeader}
+            onAddMember={() => setIsAddMemberOpen(true)}
+            onChangeLeader={() => setIsChangeLeaderOpen(true)}
+          />
+        )}
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Users className="mr-2 h-5 w-5" />
-                Members
-              </CardTitle>
-              <CardDescription>
-                {group.members.length} member{group.members.length !== 1 ? 's' : ''} in this group
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {isMentor && (
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsAddMemberDialogOpen(true)}
-                    >
-                      <UserPlus className="mr-2 h-4 w-4" />
-                      Add Member
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsChangeLeaderDialogOpen(true)}
-                    >
-                      Change Leader
-                    </Button>
-                  </div>
-                )}
-                
-                <GroupMemberList 
-                  members={group.members}
-                  onRemoveMember={isMentor ? handleRemoveMember : undefined}
-                />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Project Details</CardTitle>
-              <CardDescription>Information about the associated project</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <dl className="space-y-4">
-                <div>
-                  <dt className="text-sm font-medium text-muted-foreground">Project Title</dt>
-                  <dd className="mt-1 text-sm">{group.projectTitle}</dd>
-                </div>
-                {group.description && (
-                  <div>
-                    <dt className="text-sm font-medium text-muted-foreground">Description</dt>
-                    <dd className="mt-1 text-sm">{group.description}</dd>
-                  </div>
-                )}
-                {group.progress !== undefined && (
-                  <div>
-                    <dt className="text-sm font-medium text-muted-foreground">Progress</dt>
-                    <dd className="mt-1 text-sm">{group.progress}% complete</dd>
-                  </div>
-                )}
-              </dl>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Group Members List */}
+        {group && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1">
+              <GroupMemberList 
+                members={group.members}
+                isLoading={loading}
+                isLeader={isGroupLeader}
+                onRemoveMember={handleRemoveMember}
+              />
+            </div>
+            
+            {/* Tasks List */}
+            <div className="lg:col-span-2">
+              <TaskList 
+                tasks={tasks}
+                projectId={group.projectId}
+                projectTitle={group.projectTitle}
+              />
+            </div>
+          </div>
+        )}
+        
+        {/* Add Member Dialog */}
+        {group && (
+          <AddMemberDialog
+            groupId={id || ""}
+            open={isAddMemberOpen}
+            onOpenChange={setIsAddMemberOpen}
+            onAddMember={handleAddMember}
+            existingMemberIds={existingMemberIds}
+          />
+        )}
+        
+        {/* Change Leader Dialog */}
+        {group && (
+          <ChangeLeaderDialog
+            open={isChangeLeaderOpen}
+            onOpenChange={setIsChangeLeaderOpen}
+            members={group.members.filter(m => m.role !== "leader")}
+            onChangeLeader={handleChangeLeader}
+          />
+        )}
       </div>
-      
-      {/* Delete Group Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the group
-              "{group.name}" and remove all members from it.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deleteGroupMutation.mutate()}
-              className="bg-destructive text-destructive-foreground"
-            >
-              {deleteGroupMutation.isPending ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      
-      {/* Add Member Dialog */}
-      <AddMemberDialog
-        open={isAddMemberDialogOpen}
-        onOpenChange={setIsAddMemberDialogOpen}
-        onAddMember={(member) => addMemberMutation.mutate(member)}
-        existingMemberIds={group.members.map(m => m.id)}
-        isLoading={addMemberMutation.isPending}
-      />
-      
-      {/* Change Leader Dialog */}
-      <ChangeLeaderDialog
-        open={isChangeLeaderDialogOpen}
-        onOpenChange={setIsChangeLeaderDialogOpen}
-        members={group.members}
-        currentLeaderId={group.members.find(m => m.role === "leader")?.id || ""}
-        onChangeLeader={(newLeaderId) => changeLeaderMutation.mutate(newLeaderId)}
-        isLoading={changeLeaderMutation.isPending}
-      />
     </DashboardLayout>
   );
 };

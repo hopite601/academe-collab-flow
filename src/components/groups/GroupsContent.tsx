@@ -1,72 +1,115 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { GroupsList } from "@/components/groups/GroupsList";
-import { GroupsSearchFilter } from "@/components/groups/GroupsSearchFilter";
-import { Group, Project } from "@/types/group";
-import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
+import { GroupsList } from "./GroupsList";
+import { GroupsSearchFilter } from "./GroupsSearchFilter";
+import { useAuth } from "@/contexts/AuthContext";
+import { getGroups } from "@/services/groupService";
+import { Group } from "@/types/group";
+import { LoadingSpinner } from "../ui/loading-spinner";
 
 interface GroupsContentProps {
-  groups: Group[];
-  projects: Project[];
-  isLoading: boolean;
-  selectedProjectId: string;
-  onProjectFilterChange: (projectId: string) => void;
+  projectId?: string;
 }
 
-export function GroupsContent({ 
-  groups,
-  projects,
-  isLoading,
-  selectedProjectId,
-  onProjectFilterChange
-}: GroupsContentProps) {
+export function GroupsContent({ projectId }: GroupsContentProps) {
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState("");
   
-  const filteredGroups = groups.filter((group) => {
-    const matchesSearch = 
-      group.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      group.projectTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      group.members.some(m => m.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [filteredGroups, setFilteredGroups] = useState<Group[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterProject, setFilterProject] = useState<string>("all");
+  const [loading, setLoading] = useState(true);
+  
+  // Fetch groups from API
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        setLoading(true);
+        const data = await getGroups();
+        
+        // If projectId is provided, filter groups by that project
+        const relevantGroups = projectId 
+          ? data.filter(group => group.projectId === projectId)
+          : data;
+        
+        setGroups(relevantGroups);
+        setFilteredGroups(relevantGroups);
+      } catch (error) {
+        console.error("Failed to fetch groups:", error);
+        toast.error("Failed to load groups");
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    return matchesSearch;
-  });
-
+    fetchGroups();
+  }, [projectId]);
+  
+  // Handle search and filter
+  useEffect(() => {
+    let result = [...groups];
+    
+    // Apply project filter if not "all"
+    if (filterProject !== "all") {
+      result = result.filter(group => group.projectId === filterProject);
+    }
+    
+    // Apply search query if any
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        group => 
+          group.name.toLowerCase().includes(query) || 
+          (group.description?.toLowerCase().includes(query))
+      );
+    }
+    
+    setFilteredGroups(result);
+  }, [groups, searchQuery, filterProject]);
+  
+  // Handle group click
   const handleGroupClick = (group: Group) => {
     navigate(`/dashboard/groups/${group.id}`);
   };
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-48" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-[300px] rounded-lg" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  
+  // Extract unique projects for filter options
+  const projectOptions = Array.from(
+    new Set(groups.map(group => ({
+      id: group.projectId,
+      title: group.projectTitle
+    })))
+  );
 
   return (
     <div className="space-y-6">
-      <GroupsSearchFilter 
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        projectFilter={selectedProjectId}
-        setProjectFilter={onProjectFilterChange}
-        projects={projects}
+      {/* Search and filter controls */}
+      <GroupsSearchFilter
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        filterProject={filterProject}
+        onFilterChange={setFilterProject}
+        projectOptions={projectOptions}
       />
       
-      <GroupsList 
-        groups={filteredGroups} 
-        onGroupClick={handleGroupClick} 
-      />
+      {/* Groups list or loading state */}
+      {loading ? (
+        <div className="flex justify-center py-8">
+          <LoadingSpinner />
+        </div>
+      ) : (
+        <GroupsList
+          groups={filteredGroups}
+          onGroupClick={handleGroupClick}
+          emptyMessage={
+            projectId
+              ? "No groups found for this project"
+              : "No groups found"
+          }
+        />
+      )}
     </div>
   );
 }

@@ -1,105 +1,110 @@
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Task } from "@/services/taskService";
+import { Calendar, MoreVertical, Edit, Trash, Eye } from "lucide-react";
 
-export type Task = {
-  id: string;
-  title: string;
-  description: string;
-  status: "todo" | "in-progress" | "review" | "completed";
-  priority: "low" | "medium" | "high";
-  dueDate: string;
-  assignee?: {
-    id: string;
-    name: string;
-    avatar?: string;
-  };
-  projectId: string;
-  projectTitle: string;
-};
-
-type TaskCardProps = {
+interface TaskCardProps {
   task: Task;
   onClick?: () => void;
-  compact?: boolean;
-};
+  onEditClick?: () => void;
+  onDeleteClick?: () => void;
+  userRole?: string;
+}
 
-export function TaskCard({ task, onClick, compact = false }: TaskCardProps) {
-  const priorityColor = {
-    low: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-    medium: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
-    high: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-  };
-
+export function TaskCard({ task, onClick, onEditClick, onDeleteClick, userRole = "student" }: TaskCardProps) {
   const statusColor = {
-    todo: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400",
+    "todo": "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400",
     "in-progress": "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-    review: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
-    completed: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+    "review": "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
+    "completed": "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
   };
 
-  const statusText = {
-    todo: "To Do",
-    "in-progress": "In Progress",
-    review: "In Review",
-    completed: "Completed",
+  const priorityColor = {
+    "low": "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+    "medium": "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
+    "high": "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
   };
+
+  const canEdit = userRole === "leader" || userRole === "mentor";
 
   return (
-    <Card className="card-hover border-l-4" style={{ borderLeftColor: task.priority === "high" ? "#f87171" : task.priority === "medium" ? "#facc15" : "#4ade80" }}>
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <CardTitle className="text-md">{task.title}</CardTitle>
-          <Badge className={statusColor[task.status]} variant="outline">
-            {statusText[task.status]}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="pb-2">
-        {!compact && (
-          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-            {task.description}
-          </p>
-        )}
-        <div className="flex justify-between items-center">
-          <Badge className={priorityColor[task.priority]} variant="outline">
-            {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority
-          </Badge>
-          <span className="text-sm text-muted-foreground">
-            Due: {new Date(task.dueDate).toLocaleDateString()}
-          </span>
-        </div>
-        
-        <div className="flex justify-between items-center mt-3">
-          {task.assignee ? (
-            <div className="flex items-center space-x-2">
-              <Avatar className="h-6 w-6">
-                <AvatarImage src={task.assignee.avatar} />
-                <AvatarFallback>{task.assignee.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <span className="text-sm">{task.assignee.name}</span>
-            </div>
-          ) : (
-            <span className="text-sm text-muted-foreground italic">Unassigned</span>
+    <Card className="mb-3 cursor-pointer hover:shadow-md transition-shadow" onClick={onClick}>
+      <CardContent className="pt-4">
+        <div className="flex justify-between items-start mb-2">
+          <div className="flex-1 mr-2">
+            <h3 className="font-medium text-sm line-clamp-2">{task.title}</h3>
+          </div>
+          
+          {canEdit && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onClick && onClick(); }}>
+                  <Eye className="h-4 w-4 mr-2" /> View
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEditClick && onEditClick(); }}>
+                  <Edit className="h-4 w-4 mr-2" /> Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={(e) => { e.stopPropagation(); onDeleteClick && onDeleteClick(); }}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash className="h-4 w-4 mr-2" /> Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
-        
-        {!compact && (
-          <div className="mt-3">
-            <span className="text-xs text-muted-foreground">Project: </span>
-            <span className="text-xs">{task.projectTitle}</span>
-          </div>
-        )}
+
+        <div className="text-xs text-muted-foreground line-clamp-2 mb-3">
+          {task.description || "No description"}
+        </div>
+
+        <div className="flex flex-wrap gap-1 mb-3">
+          <Badge variant="outline" className={priorityColor[task.priority]}>
+            {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+          </Badge>
+          
+          {task.projectTitle && (
+            <Badge variant="outline" className="bg-slate-100 text-slate-800">
+              {task.projectTitle}
+            </Badge>
+          )}
+        </div>
+
+        <div className="flex items-center text-xs text-muted-foreground mb-2">
+          <Calendar className="h-3 w-3 mr-1" />
+          <span>Due {new Date(task.dueDate).toLocaleDateString()}</span>
+        </div>
       </CardContent>
-      <CardFooter className="pt-2">
-        <Button onClick={onClick} className="w-full" variant={task.status === "completed" ? "outline" : "default"}>
-          {task.status === "todo" ? "Start Task" : 
-           task.status === "in-progress" ? "Submit for Review" :
-           task.status === "review" ? "View Details" : "View Details"}
-        </Button>
-      </CardFooter>
+
+      {(task.assignees && task.assignees.length > 0) && (
+        <CardFooter className="pt-0">
+          <div className="flex justify-between items-center w-full">
+            <div className="flex -space-x-2 overflow-hidden">
+              {task.assignees.slice(0, 3).map((assignee) => (
+                <Avatar key={assignee.id} className="h-6 w-6 border-2 border-background">
+                  <AvatarImage src={assignee.avatar} alt={assignee.name} />
+                  <AvatarFallback>{assignee.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+              ))}
+              {task.assignees.length > 3 && (
+                <div className="flex items-center justify-center h-6 w-6 rounded-full bg-muted text-xs">
+                  +{task.assignees.length - 3}
+                </div>
+              )}
+            </div>
+          </div>
+        </CardFooter>
+      )}
     </Card>
   );
 }

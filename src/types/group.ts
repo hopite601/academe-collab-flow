@@ -41,3 +41,23 @@ export interface Student {
   email: string;
   avatar?: string;
 }
+
+export interface Task {
+  id: string;
+  title: string;
+  description: string;
+  status: "todo" | "in-progress" | "review" | "completed";
+  priority: "low" | "medium" | "high";
+  dueDate: string;
+  projectId?: string;
+  projectTitle?: string;
+  groupId?: string;
+  groupName?: string;
+  assignees: {
+    id: string;
+    name: string;
+    avatar?: string;
+  }[];
+  createdAt?: string;
+  updatedAt?: string;
+}

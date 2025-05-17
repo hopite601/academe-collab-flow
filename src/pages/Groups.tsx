@@ -1,60 +1,60 @@
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { GroupsHeader } from "@/components/groups/GroupsHeader";
 import { GroupsContent } from "@/components/groups/GroupsContent";
-import { CreateGroupForm } from "@/components/groups/CreateGroupForm";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { getGroups, getProjects } from "@/services/groupService";
-import { Group } from "@/types/group";
+import { ProjectFormDialog } from "@/components/groups/ProjectFormDialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { getProjects } from "@/services/projectService";
+import { Project } from "@/types/group";
 
 const Groups = () => {
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [selectedProjectId, setSelectedProjectId] = useState<string>("all");
+  const { user } = useAuth();
+  const navigate = useNavigate();
   
-  const { data: groups = [], isLoading: isLoadingGroups } = useQuery({
-    queryKey: ["groups", selectedProjectId],
-    queryFn: () => getGroups(selectedProjectId === "all" ? undefined : selectedProjectId)
-  });
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isProjectFormOpen, setIsProjectFormOpen] = useState(false);
   
-  const { data: projects = [], isLoading: isLoadingProjects } = useQuery({
-    queryKey: ["projects"],
-    queryFn: getProjects
-  });
-  
-  const handleCreateSuccess = () => {
-    setIsCreateDialogOpen(false);
+  // Fetch projects for project selection
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const projectsData = await getProjects();
+        setProjects(projectsData);
+      } catch (error) {
+        console.error("Failed to fetch projects:", error);
+      }
+    };
+    
+    fetchProjects();
+  }, []);
+
+  // Handle project selection
+  const handleProjectSelect = (projectId: string) => {
+    navigate(`/dashboard/projects/${projectId}`);
   };
-  
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
+        {/* Page header */}
         <GroupsHeader 
-          onCreateGroup={() => setIsCreateDialogOpen(true)}
+          onCreateGroup={() => setIsProjectFormOpen(true)}
+          userRole={user?.role || "student"}
         />
         
-        <GroupsContent 
-          groups={groups}
+        {/* Groups content with search, filter, and list */}
+        <GroupsContent />
+        
+        {/* Project selection dialog */}
+        <ProjectFormDialog 
+          open={isProjectFormOpen}
+          onOpenChange={setIsProjectFormOpen}
           projects={projects}
-          isLoading={isLoadingGroups || isLoadingProjects}
-          selectedProjectId={selectedProjectId}
-          onProjectFilterChange={setSelectedProjectId}
+          onProjectSelect={handleProjectSelect}
         />
       </div>
-      
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="sm:max-w-[550px]">
-          <DialogHeader>
-            <DialogTitle>Create New Group</DialogTitle>
-          </DialogHeader>
-          <CreateGroupForm 
-            projects={projects}
-            onSuccess={handleCreateSuccess}
-            onCancel={() => setIsCreateDialogOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
     </DashboardLayout>
   );
 };

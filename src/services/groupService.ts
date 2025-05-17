@@ -1,350 +1,404 @@
 
-import { Group, GroupMember, Project, Student } from '@/types/group';
+import { Group, GroupMember, Student } from '@/types/group';
 
-// Mock Projects and Students for testing
-const mockProjects: Project[] = [
-  {
-    id: 'project-1',
-    title: 'Machine Learning for Healthcare',
-    description: 'Applying ML algorithms to healthcare data for predictive analytics',
-    mentorName: 'Dr. Alan Smith',
-    mentorId: 'mentor-1',
-    status: 'in-progress',
-    progress: 30,
-    tags: ['Machine Learning', 'Healthcare', 'Data Science'],
-  },
-  {
-    id: 'project-2',
-    title: 'Sustainable Urban Design',
-    description: 'Researching sustainable practices for urban development',
-    mentorName: 'Dr. Maria Johnson',
-    mentorId: 'mentor-2',
-    status: 'open',
-    tags: ['Urban Planning', 'Sustainability', 'Architecture'],
-  },
-  {
-    id: 'project-3',
-    title: 'Quantum Computing Algorithms',
-    description: 'Development of new algorithms for quantum computers',
-    mentorName: 'Dr. Raj Patel',
-    mentorId: 'mentor-3',
-    teamLeaderName: 'Sarah Chen',
-    teamLeaderId: 'student-3',
-    status: 'in-progress',
-    progress: 45,
-    tags: ['Quantum Computing', 'Algorithms', 'Computer Science'],
-  },
-];
-
-const mockStudents: Student[] = [
-  {
-    id: 'student-1',
-    name: 'John Davis',
-    email: 'john.davis@university.edu',
-    avatar: '/placeholder.svg',
-  },
-  {
-    id: 'student-2',
-    name: 'Emily Wilson',
-    email: 'emily.wilson@university.edu',
-    avatar: '/placeholder.svg',
-  },
-  {
-    id: 'student-3',
-    name: 'Sarah Chen',
-    email: 'sarah.chen@university.edu',
-    avatar: '/placeholder.svg',
-  },
-  {
-    id: 'student-4',
-    name: 'Michael Brown',
-    email: 'michael.brown@university.edu',
-    avatar: '/placeholder.svg',
-  },
-  {
-    id: 'student-5',
-    name: 'Jessica Lopez',
-    email: 'jessica.lopez@university.edu',
-    avatar: '/placeholder.svg',
-  },
-];
-
-// Initial mock groups
-let mockGroups: Group[] = [
-  {
-    id: 'group-1',
-    name: 'Data Explorers',
-    description: 'Focused on healthcare data analysis',
-    projectId: 'project-1',
-    projectTitle: 'Machine Learning for Healthcare',
-    members: [
-      {
-        id: 'student-1',
-        name: 'John Davis',
-        email: 'john.davis@university.edu',
-        role: 'leader',
-        avatar: '/placeholder.svg',
-      },
-      {
-        id: 'student-2',
-        name: 'Emily Wilson',
-        email: 'emily.wilson@university.edu',
-        role: 'member',
-        avatar: '/placeholder.svg',
-      },
-    ],
-    progress: 30,
-    createdAt: '2023-01-15T10:30:00Z',
-    updatedAt: '2023-02-20T14:15:00Z',
-  },
-  {
-    id: 'group-2',
-    name: 'Urban Innovators',
-    description: 'Working on sustainable urban planning solutions',
-    projectId: 'project-2',
-    projectTitle: 'Sustainable Urban Design',
-    members: [
-      {
-        id: 'student-3',
-        name: 'Sarah Chen',
-        email: 'sarah.chen@university.edu',
-        role: 'leader',
-        avatar: '/placeholder.svg',
-      },
-    ],
-    progress: 10,
-    createdAt: '2023-02-01T09:45:00Z',
-    updatedAt: '2023-02-25T11:20:00Z',
-  },
-];
-
-// Delay function to simulate network requests
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-// Get all groups
-export const getGroups = async (): Promise<Group[]> => {
-  await delay(800);
-  return [...mockGroups];
-};
-
-// Get a single group by ID
-export const getGroupById = async (groupId: string): Promise<Group | null> => {
-  await delay(600);
-  const group = mockGroups.find(g => g.id === groupId);
-  return group || null;
-};
-
-// Create a new group
+// Define input structures
 export interface CreateGroupInput {
   name: string;
   description?: string;
   projectId: string;
+  projectTitle: string;
+  members: GroupMember[];
   leaderId: string;
 }
 
-export const createGroup = async (groupData: CreateGroupInput): Promise<Group> => {
-  await delay(1000);
-  
-  // Find the project
-  const project = mockProjects.find(p => p.id === groupData.projectId);
-  if (!project) {
-    throw new Error('Project not found');
-  }
-  
-  // Find the leader
-  const leader = mockStudents.find(s => s.id === groupData.leaderId);
-  if (!leader) {
-    throw new Error('Student not found');
-  }
-  
-  // Create the new group
-  const newGroup: Group = {
-    id: `group-${Date.now()}`,
-    name: groupData.name,
-    description: groupData.description,
-    projectId: project.id,
-    projectTitle: project.title,
-    members: [
-      {
-        id: leader.id,
-        name: leader.name,
-        email: leader.email,
-        role: 'leader',
-        avatar: leader.avatar,
-      },
-    ],
-    progress: 0,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-  
-  mockGroups = [...mockGroups, newGroup];
-  return newGroup;
-};
-
-// Update a group
 export interface UpdateGroupInput {
   name?: string;
   description?: string;
+  members?: GroupMember[];
+  leaderId?: string;
 }
 
-export const updateGroup = async (
-  groupId: string,
-  groupData: UpdateGroupInput
-): Promise<Group> => {
-  await delay(800);
-  
-  const groupIndex = mockGroups.findIndex(g => g.id === groupId);
-  if (groupIndex === -1) {
-    throw new Error('Group not found');
+// Mock API base URL
+const API_URL = 'https://api.example.com/groups';
+
+// Simulates creating a new group
+export const createGroup = async (data: CreateGroupInput): Promise<Group> => {
+  try {
+    // In a real implementation, this would be an API call
+    // Simulating API call with a delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    const newGroup: Group = {
+      id: `group-${Math.floor(Math.random() * 10000)}`,
+      name: data.name,
+      description: data.description || '',
+      projectId: data.projectId,
+      projectTitle: data.projectTitle,
+      members: data.members || [],
+      progress: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    return newGroup;
+  } catch (error) {
+    console.error('Failed to create group:', error);
+    throw error;
   }
-  
-  const updatedGroup = {
-    ...mockGroups[groupIndex],
-    ...groupData,
-    updatedAt: new Date().toISOString(),
-  };
-  
-  mockGroups = mockGroups.map(g => (g.id === groupId ? updatedGroup : g));
-  return updatedGroup;
 };
 
-// Delete a group
-export const deleteGroup = async (groupId: string): Promise<boolean> => {
-  await delay(700);
-  
-  const initialLength = mockGroups.length;
-  mockGroups = mockGroups.filter(g => g.id !== groupId);
-  
-  return mockGroups.length < initialLength;
+// Simulates updating an existing group
+export const updateGroup = async (id: string, data: UpdateGroupInput): Promise<Group> => {
+  try {
+    // In a real implementation, this would be an API call
+    // Simulating API call with a delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    // Mock the updated group
+    return {
+      id,
+      name: data.name || 'Updated Group',
+      description: data.description || 'This is an updated group description',
+      projectId: 'project1',
+      projectTitle: 'Research on Machine Learning Applications',
+      members: data.members || [
+        {
+          id: 'user1',
+          name: 'John Doe',
+          email: 'john@example.com',
+          role: 'leader',
+          avatar: `https://ui-avatars.com/api/?name=John+Doe&background=random`
+        },
+        {
+          id: 'user2',
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          role: 'member',
+          avatar: `https://ui-avatars.com/api/?name=Jane+Smith&background=random`
+        }
+      ],
+      progress: 25,
+      updatedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error(`Failed to update group ${id}:`, error);
+    throw error;
+  }
 };
 
-// Add a member to a group
-export const addGroupMember = async (
-  groupId: string,
-  studentId: string
-): Promise<Group> => {
-  await delay(800);
-  
-  const groupIndex = mockGroups.findIndex(g => g.id === groupId);
-  if (groupIndex === -1) {
-    throw new Error('Group not found');
+// Simulates deleting a group
+export const deleteGroup = async (id: string): Promise<boolean> => {
+  try {
+    // In a real implementation, this would be an API call
+    // Simulating API call with a delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    return true;
+  } catch (error) {
+    console.error(`Failed to delete group ${id}:`, error);
+    throw error;
   }
-  
-  const student = mockStudents.find(s => s.id === studentId);
-  if (!student) {
-    throw new Error('Student not found');
-  }
-  
-  // Check if student is already a member
-  const isMember = mockGroups[groupIndex].members.some(m => m.id === studentId);
-  if (isMember) {
-    throw new Error('Student is already a member of this group');
-  }
-  
-  const newMember: GroupMember = {
-    id: student.id,
-    name: student.name,
-    email: student.email,
-    role: 'member',
-    avatar: student.avatar,
-  };
-  
-  const updatedGroup = {
-    ...mockGroups[groupIndex],
-    members: [...mockGroups[groupIndex].members, newMember],
-    updatedAt: new Date().toISOString(),
-  };
-  
-  mockGroups = mockGroups.map(g => (g.id === groupId ? updatedGroup : g));
-  return updatedGroup;
 };
 
-// Remove a member from a group
-export const removeGroupMember = async (
-  groupId: string,
-  memberId: string
-): Promise<Group> => {
-  await delay(700);
-  
-  const groupIndex = mockGroups.findIndex(g => g.id === groupId);
-  if (groupIndex === -1) {
-    throw new Error('Group not found');
+// Simulates fetching all groups
+export const getGroups = async (): Promise<Group[]> => {
+  try {
+    // In a real implementation, this would be an API call
+    // Simulating API call with a delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Return mock data
+    const groups: Group[] = [
+      {
+        id: 'group1',
+        name: 'Research Team Alpha',
+        description: 'Machine learning research team focused on healthcare applications',
+        projectId: 'project1',
+        projectTitle: 'Research on Machine Learning Applications',
+        members: [
+          {
+            id: 'user1',
+            name: 'John Doe',
+            email: 'john@example.com',
+            role: 'leader',
+            avatar: `https://ui-avatars.com/api/?name=John+Doe&background=random`
+          },
+          {
+            id: 'user2',
+            name: 'Jane Smith',
+            email: 'jane@example.com',
+            role: 'member',
+            avatar: `https://ui-avatars.com/api/?name=Jane+Smith&background=random`
+          },
+          {
+            id: 'user3',
+            name: 'Alice Brown',
+            email: 'alice@example.com',
+            role: 'member',
+            avatar: `https://ui-avatars.com/api/?name=Alice+Brown&background=random`
+          }
+        ],
+        progress: 35,
+        createdAt: '2025-05-01T00:00:00Z',
+        updatedAt: '2025-05-10T00:00:00Z'
+      },
+      {
+        id: 'group2',
+        name: 'Research Team Beta',
+        description: 'Data analysis and visualization team',
+        projectId: 'project1',
+        projectTitle: 'Research on Machine Learning Applications',
+        members: [
+          {
+            id: 'user4',
+            name: 'Bob Wilson',
+            email: 'bob@example.com',
+            role: 'leader',
+            avatar: `https://ui-avatars.com/api/?name=Bob+Wilson&background=random`
+          },
+          {
+            id: 'user5',
+            name: 'Carol Davis',
+            email: 'carol@example.com',
+            role: 'member',
+            avatar: `https://ui-avatars.com/api/?name=Carol+Davis&background=random`
+          }
+        ],
+        progress: 20,
+        createdAt: '2025-05-02T00:00:00Z',
+        updatedAt: '2025-05-12T00:00:00Z'
+      },
+      {
+        id: 'group3',
+        name: 'Green Energy Team',
+        description: 'Team focused on renewable energy research',
+        projectId: 'project2',
+        projectTitle: 'Sustainable Energy Solutions',
+        members: [
+          {
+            id: 'user6',
+            name: 'Daniel Evans',
+            email: 'daniel@example.com',
+            role: 'leader',
+            avatar: `https://ui-avatars.com/api/?name=Daniel+Evans&background=random`
+          },
+          {
+            id: 'user7',
+            name: 'Eva Green',
+            email: 'eva@example.com',
+            role: 'member',
+            avatar: `https://ui-avatars.com/api/?name=Eva+Green&background=random`
+          },
+          {
+            id: 'user8',
+            name: 'Frank Thomas',
+            email: 'frank@example.com',
+            role: 'member',
+            avatar: `https://ui-avatars.com/api/?name=Frank+Thomas&background=random`
+          },
+          {
+            id: 'user9',
+            name: 'Grace Hill',
+            email: 'grace@example.com',
+            role: 'member',
+            avatar: `https://ui-avatars.com/api/?name=Grace+Hill&background=random`
+          }
+        ],
+        progress: 15,
+        createdAt: '2025-05-05T00:00:00Z',
+        updatedAt: '2025-05-15T00:00:00Z'
+      }
+    ];
+    
+    return groups;
+  } catch (error) {
+    console.error('Failed to fetch groups:', error);
+    throw error;
   }
-  
-  // Check if member is the leader
-  const isLeader = mockGroups[groupIndex].members.some(
-    m => m.id === memberId && m.role === 'leader'
-  );
-  
-  if (isLeader) {
-    throw new Error('Cannot remove the group leader');
-  }
-  
-  const updatedGroup = {
-    ...mockGroups[groupIndex],
-    members: mockGroups[groupIndex].members.filter(m => m.id !== memberId),
-    updatedAt: new Date().toISOString(),
-  };
-  
-  mockGroups = mockGroups.map(g => (g.id === groupId ? updatedGroup : g));
-  return updatedGroup;
 };
 
-// Change the group leader
-export const changeGroupLeader = async (
-  groupId: string,
-  newLeaderId: string
-): Promise<Group> => {
-  await delay(900);
-  
-  const groupIndex = mockGroups.findIndex(g => g.id === groupId);
-  if (groupIndex === -1) {
-    throw new Error('Group not found');
+// Simulates fetching a single group by its ID
+export const getGroupById = async (id: string): Promise<Group> => {
+  try {
+    // In a real implementation, this would be an API call
+    // Simulating API call with a delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Return mock data for the specified group
+    const groups = await getGroups();
+    const group = groups.find(g => g.id === id);
+    
+    if (!group) {
+      throw new Error(`Group with ID ${id} not found`);
+    }
+    
+    return group;
+  } catch (error) {
+    console.error(`Failed to fetch group ${id}:`, error);
+    throw error;
   }
-  
-  // Find the new leader in the members
-  const memberIndex = mockGroups[groupIndex].members.findIndex(m => m.id === newLeaderId);
-  if (memberIndex === -1) {
-    throw new Error('The selected student is not a member of this group');
-  }
-  
-  // Update members roles
-  const updatedMembers = mockGroups[groupIndex].members.map(member => ({
-    ...member,
-    role: member.id === newLeaderId ? 'leader' : 'member',
-  }));
-  
-  const updatedGroup = {
-    ...mockGroups[groupIndex],
-    members: updatedMembers,
-    updatedAt: new Date().toISOString(),
-  };
-  
-  mockGroups = mockGroups.map(g => (g.id === groupId ? updatedGroup : g));
-  return updatedGroup;
 };
 
-// Get all available projects (for creating a group)
-export const getAvailableProjects = async (): Promise<Project[]> => {
-  await delay(600);
-  return [...mockProjects];
+// Simulates fetching all available students (for adding to groups)
+export const getAvailableStudents = async (): Promise<Student[]> => {
+  try {
+    // In a real implementation, this would be an API call
+    // Simulating API call with a delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Return mock data
+    const students: Student[] = [
+      {
+        id: 'student1',
+        name: 'Alex Johnson',
+        email: 'alex@example.com',
+        avatar: `https://ui-avatars.com/api/?name=Alex+Johnson&background=random`
+      },
+      {
+        id: 'student2',
+        name: 'Beth Miller',
+        email: 'beth@example.com',
+        avatar: `https://ui-avatars.com/api/?name=Beth+Miller&background=random`
+      },
+      {
+        id: 'student3',
+        name: 'Chris Davis',
+        email: 'chris@example.com',
+        avatar: `https://ui-avatars.com/api/?name=Chris+Davis&background=random`
+      },
+      {
+        id: 'student4',
+        name: 'Diana Lee',
+        email: 'diana@example.com',
+        avatar: `https://ui-avatars.com/api/?name=Diana+Lee&background=random`
+      },
+      {
+        id: 'student5',
+        name: 'Ethan White',
+        email: 'ethan@example.com',
+        avatar: `https://ui-avatars.com/api/?name=Ethan+White&background=random`
+      }
+    ];
+    
+    return students;
+  } catch (error) {
+    console.error('Failed to fetch available students:', error);
+    throw error;
+  }
 };
 
-// Get all available students (for adding to a group)
-export const getAvailableStudents = async (groupId?: string): Promise<Student[]> => {
-  await delay(500);
-  
-  if (!groupId) {
-    return [...mockStudents];
+// Simulates adding a student to a group
+export const addMemberToGroup = async (groupId: string, memberId: string): Promise<Group> => {
+  try {
+    // In a real implementation, this would be an API call
+    // Simulating API call with a delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Get the current group
+    const group = await getGroupById(groupId);
+    
+    // Get the student
+    const students = await getAvailableStudents();
+    const student = students.find(s => s.id === memberId);
+    
+    if (!student) {
+      throw new Error(`Student with ID ${memberId} not found`);
+    }
+    
+    // Add the student as a member
+    const newMember: GroupMember = {
+      id: student.id,
+      name: student.name,
+      email: student.email,
+      role: 'member',
+      avatar: student.avatar
+    };
+    
+    // Create an updated group with the new member
+    return {
+      ...group,
+      members: [...group.members, newMember],
+      updatedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error(`Failed to add member ${memberId} to group ${groupId}:`, error);
+    throw error;
   }
-  
-  // If group ID is provided, filter out students who are already members
-  const group = mockGroups.find(g => g.id === groupId);
-  if (!group) {
-    throw new Error('Group not found');
+};
+
+// Simulates removing a member from a group
+export const removeMemberFromGroup = async (groupId: string, memberId: string): Promise<Group> => {
+  try {
+    // In a real implementation, this would be an API call
+    // Simulating API call with a delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Get the current group
+    const group = await getGroupById(groupId);
+    
+    // Remove the member
+    return {
+      ...group,
+      members: group.members.filter(member => member.id !== memberId),
+      updatedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error(`Failed to remove member ${memberId} from group ${groupId}:`, error);
+    throw error;
   }
-  
-  const memberIds = group.members.map(m => m.id);
-  return mockStudents.filter(student => !memberIds.includes(student.id));
+};
+
+// Simulates changing the group leader
+export const changeGroupLeader = async (groupId: string, newLeaderId: string): Promise<Group> => {
+  try {
+    // In a real implementation, this would be an API call
+    // Simulating API call with a delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Get the current group
+    const group = await getGroupById(groupId);
+    
+    // Update the member roles
+    return {
+      ...group,
+      members: group.members.map(member => ({
+        ...member,
+        role: member.id === newLeaderId ? 'leader' : 'member'
+      })),
+      updatedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error(`Failed to change leader to ${newLeaderId} in group ${groupId}:`, error);
+    throw error;
+  }
+};
+
+// Simulates getting progress data for a group
+export const getGroupProgress = async (groupId: string): Promise<any> => {
+  try {
+    // In a real implementation, this would be an API call
+    // Simulating API call with a delay
+    await new Promise(resolve => setTimeout(resolve, 600));
+    
+    // Return mock progress data
+    return {
+      totalTasks: 20,
+      completedTasks: 8,
+      tasksInProgress: 5,
+      tasksByMember: [
+        { name: 'John Doe', total: 7, completed: 4 },
+        { name: 'Jane Smith', total: 6, completed: 2 },
+        { name: 'Alice Brown', total: 7, completed: 2 }
+      ],
+      weeklyProgress: [
+        { week: '05/01', completed: 2 },
+        { week: '05/08', completed: 3 },
+        { week: '05/15', completed: 1 },
+        { week: '05/22', completed: 2 }
+      ]
+    };
+  } catch (error) {
+    console.error(`Failed to get progress data for group ${groupId}:`, error);
+    throw error;
+  }
 };
